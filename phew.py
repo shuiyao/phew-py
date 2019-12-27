@@ -2,6 +2,7 @@ from numpy import genfromtxt
 from numpy import array, sqrt, linspace, log, log10
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from cosmology import tcosmic
 
 class PhEWFields():
     '''
@@ -42,7 +43,7 @@ class PhEWParticle():
         self.track = []
 
 def read_phew_tracks(fname, fields):
-    tab = genfromtxt(fname, usecols=info_fields[0], dtype=info_fields[1], names=info_fields[2], skip_header=1)
+    tab = genfromtxt(fname, usecols=fields[0], dtype=fields[1], names=fields[2], skip_header=1)
     return tab
 
 print "Compiled."
@@ -114,13 +115,13 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
 # sub_Tc = tab[tab['T_c'] < 1.e4]
 #pparts = create_phew_particles(tab)        
 
-fig = plt.figure(1, figsize=(6,6))
-ax = fig.add_subplot(111)
+# fig = plt.figure(1, figsize=(6,6))
+# ax = fig.add_subplot(111)
 # draw_phew_particles(pparts, ax, 'dr', 'M_c', 'vrel', nskip=40, color_min=100.e5, color_max=900.e5)
 # draw_phew_particles(pparts, ax, 'dr', 'vrel', 'vrel', nskip=30, color_min=400.e5, color_max=900.e5)
 # draw_phew_particles(pparts, ax, 'dr', 'rho_a', 'vrel', nskip=5, logyscale=True, color_min=400.e5, color_max=900.e5, alpha=0.4)
-draw_phew_particles(pparts, ax, 'dr', 'T_a', 'vrel', nskip=50, logyscale=True, color_min=50.e5, color_max=200.e5, alpha=0.4)
-plt.show()
+# draw_phew_particles(pparts, ax, 'dr', 'T_a', 'vrel', nskip=50, logyscale=True, color_min=50.e5, color_max=200.e5, alpha=0.4)
+# plt.show()
 # cmap=plt.get_cmap("rainbow")
 # x = linspace(-1.0, 3.0, 200)
 # y = (x+2.0)**(1./3.)
