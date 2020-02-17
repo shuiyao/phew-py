@@ -42,7 +42,7 @@ class PhEWParticle():
         self.color = "black"
         self.track = []
 
-def read_phew_tracks(fname, fields):
+def read_phew_fields(fname, fields):
     tab = genfromtxt(fname, usecols=fields[0], dtype=fields[1], names=fields[2], skip_header=1)
     return tab
 
@@ -68,7 +68,7 @@ def create_phew_particles(PhEWTracks):
     print "---> Created %d PhEW particles from tracks.\n" % (len(PhEWParticles))
     return PhEWParticles
 
-def set_colors_phew_particles(PhEWParticles, field, vmin, vmax, logscale=False, cmap=plt.get_cmap("rainbow")):
+def set_colors_phew_particles(PhEWParticles, field, vmin, vmax, logscale=False, cmap=plt.get_cmap("jet")):
     logvmin = log(vmin)
     if(logscale == False):
         color_grad = vmax - vmin
@@ -84,6 +84,20 @@ def set_colors_phew_particles(PhEWParticles, field, vmin, vmax, logscale=False, 
         if(v > vmax): color_val = 1.0
         PhEWP.color = cmap(color_val)
 
+def remove_spurious_particles(track):
+    dr = track['dr']
+    atime = track['atime']
+    vrel = track['vrel']
+    mc = track['M_c']
+    # if(max(dr) >= 1000.): return 0
+    if(dr[0] >= 10.): return 0
+    for i in range(len(dr)-1):
+        if(atime[i+1] - atime[i] > 0.01): return 0
+        if(abs(dr[i+1] - dr[i]) > 0.1 * dr[-1]): return 0
+        if(abs(vrel[i+1] - vrel[i]) > 0.1 * vrel[0]): return 0
+        if(mc[i+1] > mc[i]): return 0
+    return 1
+
 def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
                         nskip=1, logxscale=False, logyscale=False, \
                         color_min=None, color_max=None, logcscale=False, alpha=0.2):
@@ -95,10 +109,14 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
         if(iskip < nskip):
             iskip += 1
             continue
-        if(max(PhEWP.track['dr']) >= 1000.): continue
-        if(PhEWP.track['dr'][0] >= 10.): continue
+        remove_spurious_particles(PhEWP.track)
+        # if(max(PhEWP.track['dr']) >= 1000.): continue
+        # if(PhEWP.track['dr'][0] >= 10.): continue
         if(color_min < PhEWP.track[fieldc][0] < color_max):
-            xarr = PhEWP.track[fieldx]
+            if(fieldx == "time" or fieldx == "dt"):
+                xarr = tcosmic(PhEWP.track['atime']) - tcosmic(PhEWP.track['atime'][0])
+            else:
+                xarr = PhEWP.track[fieldx]
             yarr = PhEWP.track[fieldy]
             if(logxscale == True): xarr = log10(xarr)
             if(logyscale == True): yarr = log10(yarr)            
@@ -108,23 +126,34 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
         iskip = 0
 
 # filename = "phews.sample"
-# filename = "/proj/shuiyao/m6n64beta1/WINDS/z2/sorted.phews"
-# Fields = PhEWFields()
-#info_fields = Fields.get_field_info(["atime","ID","dr","dv","vrel","M_c","rho_a","Mstar","T_c","T_a"], verbose=True)
-#tab = read_phew_tracks(filename, info_fields)
-# sub_Tc = tab[tab['T_c'] < 1.e4]
-#pparts = create_phew_particles(tab)        
+# filename = "/proj/shuiyao/m6n64beta5/WINDS/z2/sorted.phews"
+def draw():
+    # filename = "/proj/shuiyao/l25n144phew/WINDS/z2/sorted.phews"
+    filename = "/proj/shuiyao/m6n64beta6/WINDS/z2/sorted.phews"    
+    Fields = PhEWFields()
+    info_fields = Fields.get_field_info(["atime","ID","dr","dv","vrel","Mach","M_c","rho_a","Mstar","T_c","T_a"], verbose=True)
+    tab = read_phew_fields(filename, info_fields)
+    sub_Tc = tab[tab['T_c'] < 1.e4]
+    pparts = create_phew_particles(tab)        
 
-# fig = plt.figure(1, figsize=(6,6))
-# ax = fig.add_subplot(111)
-# draw_phew_particles(pparts, ax, 'dr', 'M_c', 'vrel', nskip=40, color_min=100.e5, color_max=900.e5)
-# draw_phew_particles(pparts, ax, 'dr', 'vrel', 'vrel', nskip=30, color_min=400.e5, color_max=900.e5)
-# draw_phew_particles(pparts, ax, 'dr', 'rho_a', 'vrel', nskip=5, logyscale=True, color_min=400.e5, color_max=900.e5, alpha=0.4)
-# draw_phew_particles(pparts, ax, 'dr', 'T_a', 'vrel', nskip=50, logyscale=True, color_min=50.e5, color_max=200.e5, alpha=0.4)
-# plt.show()
-# cmap=plt.get_cmap("rainbow")
-# x = linspace(-1.0, 3.0, 200)
-# y = (x+2.0)**(1./3.)
-# ax.scatter(x, y, color=cmap(x))
+    fig = plt.figure(1, figsize=(6,6))
+    ax = fig.add_subplot(111)
+    # draw_phew_particles(pparts, ax, 'dr', 'M_c', 'vrel', nskip=40, color_min=100.e5, color_max=900.e5)
+    # draw_phew_particles(pparts, ax, 'dr', 'vrel', 'vrel', nskip=30, color_min=400.e5, color_max=900.e5)
+    # draw_phew_particles(pparts, ax, 'dr', 'rho_a', 'vrel', nskip=5, logyscale=True, color_min=400.e5, color_max=900.e5, alpha=0.4)
+    # draw_phew_particles(pparts, ax, 'dr', 'T_c', 'vrel', nskip=50, logyscale=True, color_min=50.e5, color_max=200.e5, alpha=0.4)
+    draw_phew_particles(pparts, ax, 'time', 'dr', 'vrel', nskip=10, logyscale=False, color_min=200.e5, color_max=900.e5, alpha=0.2)
+    # draw_phew_particles(pparts, ax, 'atime', 'Mach', 'vrel', nskip=1, logyscale=False, color_min=500.e5, color_max=900.e5, alpha=0.2) # REJOIN
+    plt.show()
+
+# Check cmap
+def check_cmap(cmapname="jet"):
+    fig = plt.figure(1, figsize=(6,6))
+    ax = fig.add_subplot(111)
+    cmap=plt.get_cmap(cmapname)
+    x = linspace(0.0, 1.0, 200)
+    y = (x+2.0)**(1./3.)
+    ax.scatter(x, y, color=cmap(x), s=6)
+    plt.show()
     
     

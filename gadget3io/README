@@ -1,0 +1,24 @@
+fofpairs_z0.dat and fofpairs_z2.dat are based on p50n288zw.
+
+Some nature of each galaxy:
+  - Many star particles have same IDs with each other. They all come from a single accretion. The number of particle spliting is more than twice in many cases.
+
+galparts $GALID
+  - Generate gal_$GALID.parts
+  - Could be used by onegal.py
+
+allstars.csh:
+  - allstars $modelname $snapnum
+    - W.A.R.N.I.N.G.: Make sure UNIT_M in allstars.c is correct
+    - Generate a catalog $modelname_$snapnum.stars for all stars:
+    - Columns: idx PID GID HID Mass Tmax Age
+  - python allstars.py $modelname $snapstr
+    - Combine the above .stars file with SFRINFO, generate an auxiliary catalog named $modelname_$snapnum.starinfo
+    - Columns: Mstar, Mvir, aform, aacc, Tmax, alast
+    - particle order is NOT the same but has been ranked with ID!!!!
+  - python stars_by_mvir.py
+    - W.A.R.N.I.N.G: the PHEW flag and the UNIT_M
+    - W.A.R.N.I.N.G: The Age field is now atime.
+    
+
+To analyze the output files, use analyze/

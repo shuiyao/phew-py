@@ -1,10 +1,13 @@
 #!/bin/bash
 
-simname="m6n64beta1"
+simname="m6n64beta6"
+ncpu="32"
+# simname="l25n144phew"
+# ncpu="128"
+
 fbase="/proj/shuiyao/"$simname"/WINDS/"
 odir=$fbase"z2/"
 redshift="2.0"
-ncpu="32"
 mkdir $odir
 # Input: $WINDS/winds.*
 # Output: $WINDS/z?/wid.dat; an ID array for all wind particles launched within the time window

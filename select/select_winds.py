@@ -2,6 +2,7 @@ import ioformat
 import sys
 import os
 
+
 errormsg = "Usage: "+sys.argv[0]+" ncpu redshift(0,1,2) $WINDS"
 if(len(sys.argv) != 4):
     print errormsg
@@ -12,15 +13,19 @@ else:
     # The tclock([2]) also provides information
     MODE = 0 # Prepare for the idlist
     REDSHIFT = float(sys.argv[2])
+    if(NCPU == 32): # typically small runs
+        amaxs = ["0.22", "0.35", "0.52", "0.85"]
+    if(NCPU == 128): # likely l25n144 
+        amaxs = ["0.202", "0.335", "0.502", "0.835"]    
     FBASE = sys.argv[3]
     if(REDSHIFT == 4.0):
-        AMIN, AMAX, odir = "0.200", "0.22", FBASE+"z4/"
+        AMIN, AMAX, odir = "0.200", amaxs[0], FBASE+"z4/"
     elif(REDSHIFT == 2.0):
-        AMIN, AMAX, odir = "0.333", "0.35", FBASE+"z2/"
+        AMIN, AMAX, odir = "0.333", amaxs[1], FBASE+"z2/"
     elif(REDSHIFT == 1.0):
-        AMIN, AMAX, odir = "0.500", "0.52", FBASE+"z1/"
+        AMIN, AMAX, odir = "0.500", amaxs[2], FBASE+"z1/"
     elif(REDSHIFT == 0.2):
-        AMIN, AMAX, odir = "0.833", "0.85", FBASE+"z0/"
+        AMIN, AMAX, odir = "0.833", amaxs[3], FBASE+"z0/"
     else:
         print errormsg
         sys.exit(1)
@@ -37,7 +42,7 @@ else:
 
 ids = []
 for icpu in range(NCPU):
-    ifile = open(FBASE+"winds."+str(icpu), "r")
+    ifile = open(FBASE+"initwinds."+str(icpu), "r")
     print "Doing File #", icpu
     for line in ifile:
         spt = line.split()

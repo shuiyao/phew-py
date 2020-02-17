@@ -1,0 +1,24 @@
+#adopted from tipsy-tools
+CC = gcc
+CFLAGS = -g
+TOOLS = allstars
+#OPT += -DMARK64
+OBJS = gadget3io.o
+INCLS = gadget3io.h tipsydefs.h /usr/include/stdio.h
+LIBS = -lm
+
+#OPT = -DGALPARTS_INCLUDE_GAS # Find gas particles for galaxies?
+
+all: $(TOOLS)
+
+allstars: ${OBJS} allstars.o
+	$(CC) $(CFLAGS) $(OPT) allstars.o $(OBJS) $(LIBS) -o allstars
+
+allstars.o: allstars.c $(INCL)
+	$(CC) $(CFLAGS) $(OPT) -c allstars.c $(LIBS)
+
+clean:
+	rm -f *.o
+	rm -f $(TOOLS)
+
+

@@ -17,7 +17,7 @@ else:
     REDSHIFT = float(sys.argv[2])
     FBASE = sys.argv[3]
     if(REDSHIFT == 4.0):
-        AMIN, AMAX, odir = "0.200", "0.210", FBASE+"z4/"
+        AMIN, AMAX, odir = "0.200", "0.300", FBASE+"z4/"
     elif(REDSHIFT == 2.0):
         AMIN, AMAX, odir = "0.333", "0.433", FBASE+"z2/"
     elif(REDSHIFT == 1.0):

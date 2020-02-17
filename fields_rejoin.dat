@@ -1,0 +1,17 @@
+#idx dtype name
+0    f8  atime
+1    i8  ID
+2    f8  Mass
+3    f8  tclock
+4    f8  Vinit
+5    f8  vrel
+6    f8  cs_a
+7    f8  T_c
+8    f8  T_a
+9    f8  rho_c
+10   f8  rho_a
+11   f8  R_c
+12   f8  L_c
+13   f8  Z
+14   f8  M_c
+15   i8  flag
