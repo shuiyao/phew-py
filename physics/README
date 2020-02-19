@@ -1,0 +1,5 @@
+Some Information:
+--------------------------------
+The post-shock properties. Q Values.
+  - See postshock.dat
+  - postshock.py shows the grid for density and temperature ratios, parameterized by Mach and q

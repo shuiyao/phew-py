@@ -10,19 +10,20 @@
 # modelname="p50n288fiducial"
 #set modelname="l25n144-phewoff-g3cool"
 #set modelname="l25n144-phewoff"
-set modelname="l25n144-gadget3"
-set flag=0
+#set modelname="l25n144-gadget3"
+set modelname="l25n144-phew"
+set flag=1 # PHEW FLAG: 1 = PHEW
 
 mkdir /scratch/shuiyao/scidata/gadget3io/$modelname
 
 ./allstars $modelname 108
 # ./allstars $modelname 58 all
-# python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
-# python stars_by_mvir_gizmo.py $modelname 108 mh12 $flag
-# python stars_by_mvir_gizmo.py $modelname 108 mh13 $flag
-python stars_by_mvir_gadget3.py $modelname 108 mh11 $flag
-python stars_by_mvir_gadget3.py $modelname 108 mh12 $flag
-python stars_by_mvir_gadget3.py $modelname 108 mh13 $flag
+python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
+python stars_by_mvir_gizmo.py $modelname 108 mh12 $flag
+python stars_by_mvir_gizmo.py $modelname 108 mh13 $flag
+# python stars_by_mvir_gadget3.py $modelname 108 mh11 $flag
+# python stars_by_mvir_gadget3.py $modelname 108 mh12 $flag
+# python stars_by_mvir_gadget3.py $modelname 108 mh13 $flag
 # python allstars.py $modelname 058
 
 

@@ -1,0 +1,34 @@
+# Formulae for a simple wave with a polytropic index n_poly
+# We would parameterize everything in terms of x = 1 - u/u_esc
+# u_esc is a function of n_poly only, so is x
+
+# rho(x) = rho_0 * x ** (2/(n-1))
+# P(x) = P_0 * x ** (2n/(n-1))
+# x = 1 - u/u_esc is actually c / c_0
+def x_par(u, cs, n_poly=5./3.): 
+    b = 2.0 / (n_poly - 1.0)
+    return 1 - (u / cs) / b
+
+def fac_density(x, n_poly=5./3.):
+    b = 2.0 / (n_poly - 1.0)
+    return x ** b
+
+def fac_pressure(x, n_poly=5./3.):
+    b = 2.0 / (n_poly - 1.0)
+    return x ** (n_poly / b)
+
+def u_esc(cs, n_poly=5./3.):
+    return 2.0 * cs / (n_poly - 1.0)
+
+def show(n_poly=5./3.):
+    from numpy import linspace
+    import matplotlib.pyplot as plt
+    u = linspace(0., u_esc(1., n_poly), 100)
+    x = x_par(u, 1., n_poly)
+    rho = fac_density(x, n_poly)
+    P = fac_pressure(x, n_poly)
+    T = x ** 2
+    plt.plot(u, rho, "b-")
+    plt.plot(u, T, "r-")
+    plt.plot(u, P, "g-")
+    plt.show()

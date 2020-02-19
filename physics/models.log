@@ -1,0 +1,9 @@
+models_191110.dat: v_expansion determined by evaporation rate
+
+models_191109.dat: new conduction zone calculation
+
+models_190912.dat: fiducial; Phis = 1.1
+
+models_191104.dat: Phis = 1.0
+  - Add KHI when thermal conduction is not strong enough
+  - 

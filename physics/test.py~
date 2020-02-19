@@ -1,0 +1,3 @@
+import matplotlib.pyplot as plt
+
+a = range(0,1000)
