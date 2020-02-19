@@ -26,3 +26,14 @@ python stars_by_mvir_gadget3.py $modelname 108 mh13 $flag
 # python allstars.py $modelname 058
 
 
+# Notes:
+# ---
+# allstars:
+#   - Select haloes according to their Msub (from .sogtp)
+#   - Returns: All stars selected and their properties
+# stars_by_mvir_gizmo.py
+#   - Combine output above with SFRINFO
+#   - 
+# starinfo_selected_by_....py
+#   - load_central_stars() will select only stars from the centrals
+#   - find_total_mass() will add up Msub of all stars selected
