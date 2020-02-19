@@ -1,9 +1,0 @@
-67000.		M_c		[Msolar]
-480.		v_h		[km/s]
-1e7		T_a		[K]
-1e4		T_eq		[K]
-1.0		n_c		[cm^{-3}]
-1000		chi
-0.90		q_s
-1.0		mach
-1.0		f_cond
