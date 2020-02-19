@@ -109,7 +109,7 @@ for i in range(NPANELS):
     axs[i].plot(0.80-xoff, 0.54, color="purple", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
     axs[i].text(0.83-xoff, 0.54, "spherical", color='purple', fontsize=12, transform=axs[i].transAxes, va='center')
 
-plt.savefig("./figures/mloss.pdf")    
+# plt.savefig("./figures/mloss.pdf")    
 plt.show()
 
 
