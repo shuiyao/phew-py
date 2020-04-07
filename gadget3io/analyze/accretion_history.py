@@ -25,10 +25,16 @@ def find_fnames(modelname, mstr):
     soname = "/proj/shuiyao/"+modelname+"/"+"so_z"+snapstr+".sovcirc"    
     return sfrinfoname, soname
 
+SEPARATE_COLD_HOT_WINDS = False
+SHOW_WINDS_MIXED = True
+
 FIGNAME = "sfhistory.pdf"
+FIGNAME = "/scratch/shuiyao/figures/tmp.pdf"
 CENTRAL_ONLY = True
 color_coldw = "cyan"
 color_hotw = "magenta"
+color_wind = "green"
+color_wmix = "cyan"
 HUBBLEPARAM = 0.7
 OMEGAB = 0.045
 OMEGAM = 0.3
@@ -51,6 +57,9 @@ class binned_by_aform():
         self.hot = array([0.0]*self.nbins)
         self.wcold = array([0.0]*self.nbins)
         self.whot = array([0.0]*self.nbins)
+        self.wind = array([0.0]*self.nbins) # Total winds (excluding mixed)
+        self.wmix = array([0.0]*self.nbins) # Total winds mixed 
+        self.cold = array([0.0]*self.nbins)        
         self.other = array([0.0]*self.nbins)
         self.total = array([0.0]*self.nbins)
         self.totalmass = 0.0 # Total mass of all haloes involved (will be corrected by Ob/Om)
@@ -64,35 +73,57 @@ class binned_by_aform():
         self.hot = arraysum(self.hot)
         self.wcold = arraysum(self.wcold)
         self.whot = arraysum(self.whot)
+        self.wmix = arraysum(self.wmix)
+        self.wind = arraysum(self.wind)                
         self.total = arraysum(self.total)
         self.other = arraysum(self.other)        
     def draw(self, ax, lstyle="-", method="cumulative"):
         if(method == "normed"):
             ax.plot(self.mid, log10(self.cold/self.totalmass), linestyle=lstyle, color="blue")
             ax.plot(self.mid, log10(self.hot/self.totalmass), linestyle=lstyle, color="red")
-            ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
-            ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
-            ax.plot(self.mid, log10((self.total-self.other)/self.totalmass), linestyle=lstyle, color="lightgrey")
+            if(SEPARATE_COLD_HOT_WINDS):
+                ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
+                ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
+            else:
+                ax.plot(self.mid, log10(self.wind/self.totalmass), linestyle=lstyle, color=color_wind)
+            if(SHOW_WINDS_MIXED):
+                ax.plot(self.mid, log10(self.wmix/self.totalmass), linestyle=lstyle, color=color_wmix)
+                ax.plot(self.mid, log10((self.total-self.wmix)/self.totalmass), linestyle=lstyle, color="lightgrey")
+            ax.plot(self.mid, log10((self.total-self.other)/self.totalmass), linestyle=lstyle, color="orange")
             ax.plot(self.mid, log10(self.total/self.totalmass), linestyle=lstyle, color="black")
-        elif(method == "cumulative"):
-            ax.plot(self.mid, self.cold/self.total, linestyle=lstyle, color="blue")
-            ax.plot(self.mid, self.hot/self.total, linestyle=lstyle, color="red")
-            ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
-            ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
-            ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="lightgrey")
-            ax.plot(self.mid, self.total/self.total, linestyle=lstyle, color="black")
-            ax.plot(self.mid, self.total/self.total[-1], linestyle=lstyle, color="grey") # The stellar mass growth of all stars
         elif(method == "differential"):
             ax.plot(self.mid, log10(self.cold/self.totalmass/self.dz), linestyle=lstyle, color="blue")
             ax.plot(self.mid, log10(self.hot/self.totalmass/self.dz), linestyle=lstyle, color="red")
-            ax.plot(self.mid, log10(self.wcold/self.totalmass/self.dz), linestyle=lstyle, color=color_coldw)
-            ax.plot(self.mid, log10(self.whot/self.totalmass/self.dz), linestyle=lstyle, color=color_hotw)
-            ax.plot(self.mid, log10(1.0-self.other/self.totalmass/self.dz), linestyle=lstyle, color="lightgrey")
+            if(SEPARATE_COLD_HOT_WINDS):            
+                ax.plot(self.mid, log10(self.wcold/self.totalmass/self.dz), linestyle=lstyle, color=color_coldw)
+                ax.plot(self.mid, log10(self.whot/self.totalmass/self.dz), linestyle=lstyle, color=color_hotw)
+            else:
+                ax.plot(self.mid, log10(self.wind/self.totalmass/self.dz), linestyle=lstyle, color=color_wind)
+            if(SHOW_WINDS_MIXED):
+                ax.plot(self.mid, log10(self.wmix/self.totalmass/self.dz), linestyle=lstyle, color=color_wmix)
             ax.plot(self.mid, log10(self.total/self.totalmass/self.dz), linestyle=lstyle, color="black")
+            ax.plot(self.mid, log10(1.0-self.other/self.totalmass/self.dz), linestyle=lstyle, color="orange")
+        elif(method == "cumulative"):
+            ax.plot(self.mid, self.cold/self.total, linestyle=lstyle, color="blue")
+            ax.plot(self.mid, self.hot/self.total, linestyle=lstyle, color="red")
+            if(SEPARATE_COLD_HOT_WINDS):            
+                ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
+                ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
+            else:
+                ax.plot(self.mid, self.wind/self.total, linestyle=lstyle, color=color_wind)
+            if(SHOW_WINDS_MIXED):
+                ax.plot(self.mid, self.wmix/self.total, linestyle=lstyle, color=color_wmix)
+            ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="orange")
+            ax.plot(self.mid, self.total/self.total, linestyle=lstyle, color="black")
+            ax.plot(self.mid, self.total/self.total[-1], linestyle=lstyle, color="grey") # The stellar mass growth of all stars
 
-def read_starinfo(fname):
-    stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
-    # a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID
+def read_starinfo(fname, fformat="new"):
+    if(fformat == "new"):
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
+    if(fformat == "old"):
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,i8,i8', names=True)        
+    # New Format: a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID
+    # Old Format: a_form a_acc a_last Mass Tmax GID HID    
     # if Mvir < 0, it's a satellite galaxy
     return stars
 
@@ -106,11 +137,19 @@ def build_abins(stars, cumulative=False):
             else: abins.cold[bidx] += s['Mass']        
         elif(s['a_last'] < 0): # wind
             # Caution ~ Now Tmax are all > 0
+            abins.wind[bidx] += s['Mass']            
             if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
             else: abins.wcold[bidx] += s['Mass']
         else: abins.other[bidx] += s['Mass']
     if(cumulative == True):
         abins.cumulate()
+    abins.hot *= ac.msolar
+    abins.cold *= ac.msolar
+    abins.wind *= ac.msolar
+    abins.wcold *= ac.msolar
+    abins.whot *= ac.msolar
+    abins.other *= ac.msolar
+    abins.total *= ac.msolar    
     return abins
 
 def build_abins_phew(stars, cumulative=False):
@@ -118,25 +157,30 @@ def build_abins_phew(stars, cumulative=False):
     for s in stars: # loop over all stars
         bidx = abins.find_idx_for_bin(s['a_form'])
         abins.total[bidx] += s['Mass']
-        if(s['Mass'] < s['WindMass']): s['WindMass'] = s['Mass']
+        # if(s['Mass'] < s['WindMass']): s['WindMass'] = s['Mass']
         if(s['a_last'] == 0): # primordial
+            abins.wmix[bidx] += s['WindMass']
             if(s['Tmax'] > 5.5):
                 abins.hot[bidx] += s['Mass'] - s['WindMass']
+                # if(s['WindMass'] <= 1.0 * s['Mass']):                                
                 abins.whot[bidx] += s['WindMass']
             else:
                 abins.cold[bidx] += s['Mass'] - s['WindMass']
+                # if(s['WindMass'] <= 1.0 * s['Mass']):                
                 abins.wcold[bidx] += s['WindMass']
         elif(s['a_last'] < 0): # wind
             # Caution ~ Now Tmax are all > 0
+            abins.wind[bidx] += s['Mass']
             if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
             else: abins.wcold[bidx] += s['Mass']
-        else: abins.other[bidx] += s['Mass']
+        else:
+            abins.other[bidx] += s['Mass']
     if(cumulative == True):
         abins.cumulate()
     return abins
 
-def load_central_stars(fname):
-    stars = read_starinfo(fname)
+def load_central_stars(fname, fformat="new"):
+    stars = read_starinfo(fname, fformat=fformat)
     nstars = len(stars)
     stars = stars[stars['GID'] == stars['HID']] # Only central galaxies
     print "Stars from central galaxies: %d/%d (%4.1f%%)" % \
@@ -145,7 +189,7 @@ def load_central_stars(fname):
 
 def find_total_mass(stars, soname):
     mtot = 0.0
-    msub = ioformat.rcol(soname, [6], linestart=1)
+    msub = ioformat.rcol(soname, [6], linestart=1)    
     ncount = 0
     for s in stars:
         m = msub[s['HID'] - 1]
@@ -194,8 +238,21 @@ def figure_sfhistory():
 
     mstrs = ['mh11', 'mh12', 'mh13'] # fi
     # modelnames = ["p50n288sw", "p50n288fiducial", "p50n288beta2"] # mi
-    modelnames = ["l25n144-gadget3","l25n144-phewoff-g3cool", "l25n144-phewoff"] # mi
-    labels = ["Gadget3", "G3Cool", "GIZMO"]
+
+    # modelnames = ["l25n144-gadget3","l25n144-phewoff", "l25n144-phew"] # mi
+    # labels = ["G3Winds", "PhEWOFF", "PhEW"]    
+
+    # modelnames = ["l25n144-phew-m5kh100fs10","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
+    # labels = ["mc5", "mc4kh50", "mc4kh100"]
+
+    modelnames = ["l25n144-phewoff","l25n144-phew-m4kh100fs10", "l25n144-phew-m5kh30fs10"] # mi    
+    labels = ["PhEWOff", "m4kh100fs10", "m5kh30fs10"]
+
+    # modelnames = ["l25n144-phew-m4kh100fs100","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
+    # labels = ["mc4fs100", "mc4kh50", "mc4fs10"]
+
+    # modelnames = ["p50n288fiducial","l25n144-gadget3", "l25n144-phewoff"] # mi
+    # labels = ["p50n288", "Gadget3", "GIZMO"]
     # titlestr = [r'$11.0 < \log(\frac{M_{vir}}{M_\odot}) < 11.5$',\
     #             r'$11.85 < \log(\frac{M_{vir}}{M_\odot}) < 12.15$',\
     #             r'$12.85 < \log(\frac{M_{vir}}{M_\odot}) < 13.15$']
@@ -205,17 +262,20 @@ def figure_sfhistory():
     lstyles = [":", "--", "-"]
     moster18 = [8.92, 10.4, 10.96] # Moster 18 M* for the three bins
     moster18 = (array(moster18) - array([11.25, 12.0, 13.0])) - log10(OMEGAB/OMEGAM)
-    FIGNAME = "sfhistory1.pdf"
     from matplotlib.lines import Line2D
     lgds = []
     for fi in range(3): # Mass bins
-        for mi in [0,2]: # Models
+        for mi in [0, 2]: # Models
             sfrinfoname, soname = find_fnames(modelnames[mi], mstrs[fi])
             print sfrinfoname, soname
-            stars = load_central_stars(sfrinfoname)
-            # abins = build_abins(stars, cumulative=False)
-            abins = build_abins_phew(stars, cumulative=False)            
+            if(mi == -1):
+                stars = load_central_stars(sfrinfoname, fformat="old")
+                abins = build_abins(stars, cumulative=False)
+            else:
+                stars = load_central_stars(sfrinfoname, fformat="new")
+                abins = build_abins_phew(stars, cumulative=False)            
             abins.totalmass = find_total_mass(stars, soname)
+            print "Total Mass ----> ", abins.totalmass
             abins.draw(axs[3+fi], lstyle=lstyles[mi], method="differential") # Normed cumulative                
             abins.cumulate()
             abins.draw(axs[0+fi], lstyle=lstyles[mi], method="normed") # Normed by total Mass
@@ -225,7 +285,7 @@ def figure_sfhistory():
                 lgds.append(Line2D([0], [0], color="black", linestyle=lstyles[mi], label=labels[mi]))
         axs[fi].plot([log10(3.), log10(3.)], [-4.0, 0.0], ":", color="lightgrey")
         axs[fi].plot([log10(2.), log10(2.)], [-4.0, 0.0], ":", color="lightgrey")
-        axs[fi].plot(log10(1.1), moster18[fi], "*", color="darkgreen", markersize=18)
+        axs[fi].plot(log10(1.1), moster18[fi], "*", color="black", markersize=18)
         axs[fi+3].plot([log10(3.), log10(3.)], [-5.0, 0.0], ":", color="lightgrey")
         axs[fi+3].plot([log10(2.), log10(2.)], [-5.0, 0.0], ":", color="lightgrey")        
         axs[fi+6].plot([log10(3.), log10(3.)], [0.0, 1.1], ":", color="lightgrey")
@@ -237,13 +297,18 @@ def figure_sfhistory():
     axs[0].legend(handles=lgds, loc="upper left")
     lgds = [Line2D([0], [0], color="black", linestyle="-", label="total"),\
             Line2D([0], [0], color="blue", linestyle="-", label="cold"),\
-            Line2D([0], [0], color="red", linestyle="-", label="hot"),\
-            Line2D([0], [0], color="cyan", linestyle="-", label="cold wind"),\
-            Line2D([0], [0], color="magenta", linestyle="-", label="hot wind"),\
-            Line2D([0], [0], color="lightgrey", linestyle="-", label="M(z)/M(z=0)")]
+            Line2D([0], [0], color="red", linestyle="-", label="hot")]
+    if(SEPARATE_COLD_HOT_WINDS):
+        lgds.append(Line2D([0], [0], color="cyan", linestyle="-", label="cold wind"))
+        lgds.append(Line2D([0], [0], color="magenta", linestyle="-", label="hot wind"))
+    else:
+        lgds.append(Line2D([0], [0], color="green", linestyle="-", label="wind"))
+    if(SHOW_WINDS_MIXED):
+        lgds.append(Line2D([0], [0], color="cyan", linestyle="-", label="wmix"))
+    lgds.append(Line2D([0], [0], color="lightgrey", linestyle="-", label="M(z)/M(z=0)"))
     axs[6].legend(handles=lgds, loc="upper left")
 
-    # plt.savefig(FIGNAME)
+    plt.savefig(FIGNAME)
 
 def show_wind_temperatures():
     winds = stars[stars['a_last'] < 0]

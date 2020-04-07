@@ -38,8 +38,6 @@ DTTOL = 1000. * ac.myr
 DMTOL = 0.2
 NEGATIVE_TMAX_FOR_WINDS = False
 # Note that in some later version of the Gadget code (e.g., p50n288dsw), I make the Tmax of particles negative if their last accretion is from winds. But in previous versions it's not there.
-modelname = "p50n288sw"
-snapstr = "058"
 
 class skidgal():
     def __init__(self, mstar, mvir):

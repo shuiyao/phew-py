@@ -1,9 +1,9 @@
 #idx dtype name
 0    f8  atime
-1    i8  ID
+1    i8  Key
 2    i8  wind_flag
 3    f8  Mass
-4    f8  M_c
+4    f8  M_cloud
 5    f8  vrel
 6    f8  Mach
 7    f8  Mstar

@@ -1,0 +1,25 @@
+PHEW_SCRIPTS: batch_l25n144.sh
+
+PHEW_TEST: Check gsmfs, smhms, stuff
+
+Recycling Timescale: $SCI/newwind/
+  - pickout_l25.sh: Create winds.z?, sfrinfo.z?
+  - compile_wind_info.sh calls
+  - compile_wind_info_l25.py
+  - data in $SCIDATA/newwind/$modelname/
+    - recyinfo.z?
+    - #ID ai af msi msf mstar mvir tmax cenflag
+    - windhost.z?
+    - Not that important, supplementary
+  - trecy.py Plot
+
+V25Vc: $SCI/newwind/
+  - select/pickout_l25.sh: get WINDS/z2/ and sfrinfo.z?
+  - select/select.sh: main code for selecting winds
+  - makeplots.sh calls l25n144.py:
+    - main function: write_wind_features()
+    - Data: $SCIDATA/$modelname/windsinfo.z? (The V25 file)
+
+Accretion: $SCI/phew/gadget3io/allstars.csh
+
+

@@ -1,4 +1,4 @@
-#!/bin/tcsh
+#!/bin/bash
 
 # 1. Generate .stars file from TIPSY binaries and .grp, .sogrp files
 # ./allstars modelname snapnum (all)
@@ -13,8 +13,13 @@
 #set modelname="l25n144-gadget3"
 #set modelname="l25n144-phewoff"
 
-set modelname=$1
-set flag=1 # PHEW FLAG: 1 = PHEW
+modelname=$1
+flag=1 # PHEW FLAG: 1 = PHEW
+
+if [ ! $modelname ]; then
+    echo "allstars.sh: Need model name. Force exit."
+    exit
+fi
 
 mkdir /scratch/shuiyao/scidata/gadget3io/$modelname
 

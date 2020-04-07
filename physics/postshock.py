@@ -60,8 +60,10 @@ for q in qs:
         fac_rho.append(conduction.ratio_density(q, mach))
         fac_T.append(conduction.ratio_temperature(q, mach))
     plt.plot(fac_rho, fac_T, "k:")
-    if(q == 0.99): q = 1.0
-    plt.text(fac_rho[-1]+txtoffset, fac_T[-1], str(q)[:3], fontsize=14, color="black")
+    if(q == 0.99): 
+        plt.text(fac_rho[-1]+txtoffset, fac_T[-1], str(q)[:4], fontsize=14, color="black")
+    else:
+        plt.text(fac_rho[-1]+txtoffset, fac_T[-1], str(q)[:3], fontsize=14, color="black")        
 
 plt.xscale("log")
 plt.yscale("log")

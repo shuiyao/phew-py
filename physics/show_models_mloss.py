@@ -78,38 +78,58 @@ for i in range(NPANELS):
     ms = 9
     idx = bs16['ID'][i]
     if(idx > 7): continue
-    axs[idx].plot(bs16['t75'][i], 0.75, color="grey", marker=symlst[0], markersize=ms)
-    axs[idx].plot(bs16['t50'][i], 0.50, color="grey", marker=symlst[1], markersize=ms)
-    axs[idx].plot(bs16['t25'][i], 0.25, color="grey", marker=symlst[2], markersize=ms)
+    axs[idx].plot(bs16['t75'][i], 0.75, color="black", marker=symlst[0], markersize=ms)
+    axs[idx].plot(bs16['t50'][i], 0.50, color="black", marker=symlst[1], markersize=ms)
+    axs[idx].plot(bs16['t25'][i], 0.25, color="black", marker=symlst[2], markersize=ms)
     x = [0.0, bs16['t75'][i], bs16['t50'][i], bs16['t25'][i]]
     y = [1.0, 0.75, 0.50, 0.25]
-    axs[idx].plot(x, y, "-", color="grey")
+    axs[idx].plot(x, y, "-", color="black")
 
-# for i in range(len(bs16pred['ID'])):
-#     idx = bs16pred['ID'][i]    
-#     axs[idx].plot(bs16pred['tevap'][i], bs16pred['vc'][i], color="black", marker="+", markersize=12)
-#     print bs16pred['tevap'][i], bs16pred['vc'][i]
+for i in range(NPANELS):
+    idx = bs16pred['ID'][i]    
+    x = [0.0, bs16pred['tevap'][i]]
+    y = [1.0, 0.0]
+    axs[idx].plot(x, y, "--", color="grey")
 
 for i in range(NPANELS):
     axs[i].text(0.7, 0.1, bs16['Modelname'][i], color='black', fontsize=12, transform=axs[i].transAxes)
 
-axs[0].plot(0.05, 0.40, color="grey", marker=symlst[0], markersize=12, transform=axs[0].transAxes)
-axs[0].plot(0.05, 0.25, color="grey", marker=symlst[1], markersize=12, transform=axs[0].transAxes)
-axs[0].plot(0.05, 0.10, color="grey", marker=symlst[2], markersize=12, transform=axs[0].transAxes)
-axs[0].text(0.08, 0.40, r'$t_{75}$', color='grey', fontsize=12, transform=axs[0].transAxes, va='center')
-axs[0].text(0.08, 0.25, r'$t_{50}$', color='grey', fontsize=12, transform=axs[0].transAxes, va='center')
-axs[0].text(0.08, 0.10, r'$t_{25}$', color='grey', fontsize=12, transform=axs[0].transAxes, va='center')    
+axs[0].plot(0.05, 0.40, color="black", marker=symlst[0], markersize=12, transform=axs[0].transAxes)
+axs[0].plot(0.05, 0.25, color="black", marker=symlst[1], markersize=12, transform=axs[0].transAxes)
+axs[0].plot(0.05, 0.10, color="black", marker=symlst[2], markersize=12, transform=axs[0].transAxes)
+axs[0].text(0.08, 0.40, r'$t_{75}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')
+axs[0].text(0.08, 0.25, r'$t_{50}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')
+axs[0].text(0.08, 0.10, r'$t_{25}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')
 
-xoff = 0.05
-for i in range(NPANELS):
-    axs[i].plot(0.80-xoff, 0.9, color="grey", marker=symlst[1], markersize=12, transform=axs[i].transAxes)
-    axs[i].text(0.83-xoff, 0.9, "BS16", color='grey', fontsize=12, transform=axs[i].transAxes, va='center')
-    axs[i].plot(0.80-xoff, 0.72, color="blue", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
-    axs[i].text(0.83-xoff, 0.72, r'$\hat{q}=0.90$', color='blue', fontsize=12, transform=axs[i].transAxes, va='center')
-    axs[i].plot(0.80-xoff, 0.54, color="purple", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
-    axs[i].text(0.83-xoff, 0.54, "spherical", color='purple', fontsize=12, transform=axs[i].transAxes, va='center')
+from pltastro import legend
+lgd = legend.legend(axs[6])
+lgd.addLine(("BS16 simulation", "black", "-", 1))
+lgd.addLine(("BS16 prediction", "grey", "--", 1))
+lgd.loc = "upper right"
+lgd.fontsize = 11
+# lgd.set_label()
+lgd.draw()
+lgd = legend.legend(axs[7])
+lgd.addLine(("PhEW $\hat{q}=0.90$", "blue", "-", 1))
+lgd.addLine(("Spherical", "purple", "-", 1))
+lgd.loc = "upper right"
+lgd.fontsize = 11
+# lgd.set_label()
+lgd.draw()
 
-# plt.savefig("./figures/mloss.pdf")    
+# xoff = 0.25
+# for i in range(NPANELS):
+#     if(i != 7): continue
+#     axs[i].plot(0.80-xoff, 0.9, color="black", marker=symlst[1], markersize=12, transform=axs[i].transAxes)
+#     axs[i].text(0.83-xoff, 0.9, "BS16 Simulations", color='black', fontsize=12, transform=axs[i].transAxes, va='center')
+#     axs[i].plot(0.80-xoff, 0.72, color="grey", marker=symlst[1], markersize=12, transform=axs[i].transAxes)
+#     axs[i].text(0.83-xoff, 0.72, "BS16 Models", color='grey', fontsize=12, transform=axs[i].transAxes, va='center')
+#     axs[i].plot(0.80-xoff, 0.54, color="blue", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
+#     axs[i].text(0.83-xoff, 0.54, r'$\hat{q}=0.90$', color='blue', fontsize=12, transform=axs[i].transAxes, va='center')
+#     axs[i].plot(0.80-xoff, 0.36, color="purple", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
+#     axs[i].text(0.83-xoff, 0.36, "spherical", color='purple', fontsize=12, transform=axs[i].transAxes, va='center')
+
+plt.savefig("./figures/mloss.pdf")    
 plt.show()
 
 

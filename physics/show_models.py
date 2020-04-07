@@ -10,7 +10,7 @@ from pylab import setp
 
 import config_mpl
 
-SHOW_BS16PRED = False
+SHOW_BS16PRED = True
 bs16 = Table.read("models_bs16.dat", format="ascii", data_start=0)
 bs16pred = Table.read("models_bs16_predictions.dat", format="ascii", data_start=0)
 ana = Table.read("models_191110.dat", format="ascii", data_start=0)
@@ -35,13 +35,16 @@ for i in range(NPANELS):
     axs.append(plt.subplot(gs[i]))
 
 for i in range(len(bs16['ID'])):
-    ms = 18
+    ms = 12
     idx = bs16['ID'][i]
-    vinit = pi / 8.0 * ana['vs'][i] # Assumption of vinit    
     if(idx > NPANELS-1): continue
-    axs[idx].plot(bs16['t75'][i], bs16['v75'][i], color="grey", marker=symlst[0], markersize=ms)
-    axs[idx].plot(bs16['t50'][i], bs16['v50'][i], color="grey", marker=symlst[1], markersize=ms)
-    axs[idx].plot(bs16['t25'][i], bs16['v25'][i], color="grey", marker=symlst[2], markersize=ms)
+    vinit = pi / 8.0 * ana['vs'][i] # Assumption of vinit    
+    axs[idx].plot(bs16['t75'][i], bs16['v75'][i], color="black", marker=symlst[0], markersize=ms)
+    axs[idx].plot(bs16['t50'][i], bs16['v50'][i], color="black", marker=symlst[1], markersize=ms)
+    axs[idx].plot(bs16['t25'][i], bs16['v25'][i], color="black", marker=symlst[2], markersize=ms)
+    x = [0.0, bs16['t75'][i], bs16['t50'][i], bs16['t25'][i]]
+    y = array([vinit, bs16['v75'][i], bs16['v50'][i], bs16['v25'][i]])
+    axs[idx].plot(x, y, "-", color="black")
 
 for i in range(len(ana['ID'])):
     if(i > NPANELS-1): continue
@@ -72,31 +75,50 @@ for i in range(len(ana_sph['ID'])):
     # axs[idx].plot([0., 40.], [ana_sph['vs'][i], ana_sph['vs'][i]], "k--")
 
 if(SHOW_BS16PRED):
-    for i in range(len(bs16pred['ID'])):
-        idx = bs16pred['ID'][i]    
-        axs[idx].plot(bs16pred['tevap'][i], bs16pred['vc'][i], color="black", marker="+", markersize=12)
-        print bs16pred['tevap'][i], bs16pred['vc'][i]
+    for i in range(NPANELS):
+        idx = bs16pred['ID'][i]
+        vinit = pi / 8.0 * ana['vs'][i] # Assumption of vinit                
+        x = [0.0, bs16pred['tevap'][i]*0.75]
+        y = [vinit, bs16pred['vc'][i]*0.75]
+        axs[idx].plot(x, y, "--", color="grey")
+        axs[idx].plot(0.75*bs16pred['tevap'][i], 0.75*bs16pred['vc'][i], color="grey", marker=".", markersize=12)   
 
 for i in range(NPANELS):
     axs[i].text(0.7, 0.1, bs16['Modelname'][i], color='black', fontsize=12, transform=axs[i].transAxes)
 
-axs[0].plot(0.05, 0.9, color="grey", marker=symlst[0], markersize=12, transform=axs[0].transAxes)
-axs[0].plot(0.05, 0.75, color="grey", marker=symlst[1], markersize=12, transform=axs[0].transAxes)
-axs[0].plot(0.05, 0.60, color="grey", marker=symlst[2], markersize=12, transform=axs[0].transAxes)
+axs[0].plot(0.05, 0.9, color="black", marker=symlst[0], markersize=12, transform=axs[0].transAxes)
+axs[0].plot(0.05, 0.75, color="black", marker=symlst[1], markersize=12, transform=axs[0].transAxes)
+axs[0].plot(0.05, 0.60, color="black", marker=symlst[2], markersize=12, transform=axs[0].transAxes)
 axs[0].text(0.08, 0.9, r'$t_{75}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')
 axs[0].text(0.08, 0.75, r'$t_{50}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')
 axs[0].text(0.08, 0.60, r'$t_{25}$', color='black', fontsize=12, transform=axs[0].transAxes, va='center')    
 
 # axs[0].plot(0.80, 0.60, color="blue", marker=symlst[1], markersize=12, transform=axs[0].transAxes)
 # axs[0].text(0.83, 0.60, r'$\hat{q}=0.95$', color='blue', fontsize=12, transform=axs[0].transAxes, va='center')
-xoff = 0.05
-for i in range(NPANELS):
-    axs[i].plot(0.80-xoff, 0.9, color="grey", marker=symlst[1], markersize=18, transform=axs[i].transAxes)
-    axs[i].text(0.83-xoff, 0.9, "BS16", color='grey', fontsize=12, transform=axs[i].transAxes, va='center')
-    axs[i].plot(0.80-xoff, 0.72, color="blue", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
-    axs[i].text(0.83-xoff, 0.72, r'$\hat{q}=0.90$', color='blue', fontsize=12, transform=axs[i].transAxes, va='center')
-    axs[i].plot(0.80-xoff, 0.54, color="purple", marker=symlst[1], markersize=12, transform=axs[i].transAxes)       
-    axs[i].text(0.83-xoff, 0.54, "spherical", color='purple', fontsize=12, transform=axs[i].transAxes, va='center')
+# xoff = 0.05
+# for i in range(NPANELS):
+#     axs[i].plot(0.80-xoff, 0.9, color="black", marker=symlst[1], markersize=18, transform=axs[i].transAxes)
+#     axs[i].text(0.83-xoff, 0.9, "BS16", color='black', fontsize=12, transform=axs[i].transAxes, va='center')
+#     axs[i].plot(0.80-xoff, 0.72, color="blue", marker=symlst[1], markersize=12, transform=axs[i].transAxes)   
+#     axs[i].text(0.83-xoff, 0.72, r'$\hat{q}=0.90$', color='blue', fontsize=12, transform=axs[i].transAxes, va='center')
+#     axs[i].plot(0.80-xoff, 0.54, color="purple", marker=symlst[1], markersize=12, transform=axs[i].transAxes)       
+#     axs[i].text(0.83-xoff, 0.54, "spherical", color='purple', fontsize=12, transform=axs[i].transAxes, va='center')
+
+from pltastro import legend
+lgd = legend.legend(axs[6])
+lgd.addLine(("BS16 simulation", "black", "-", 1))
+lgd.addLine(("BS16 prediction", "grey", "--", 1))
+lgd.loc = "upper right"
+lgd.fontsize = 11
+# lgd.set_label()
+lgd.draw()
+lgd = legend.legend(axs[7])
+lgd.addLine(("PhEW $\hat{q}=0.90$", "blue", "-", 1))
+lgd.addLine(("Spherical", "purple", "-", 1))
+lgd.loc = "upper right"
+lgd.fontsize = 11
+# lgd.set_label()
+lgd.draw()
 
 for i in range(NPANELS):
     # axs.append(plt.subplot(gs[i]))

@@ -1,22 +1,51 @@
 #!/bin/bash
 
-simname="m6n64beta6"
-ncpu="32"
-# simname="l25n144phew"
-# ncpu="128"
+# simname="m6n64beta6"
+# ncpu="32"
+# simname="l25n144-phew"
+# simname="l25n144-phew-m4kh100fs10"
+simname=$1
+redshift=$2
+ncpu="128"
+
+if [ ! $simname ]; then
+    echo "select.sh: Need model name. Force exit."
+    exit
+fi
+if [ ! $redshift ]; then
+    echo "Use default redshift = 1.0"
+    redshift="1.0"
+fi
+if [[ $redshift == "1.0" ]]; then
+    zstr="z1/"
+elif [[ $redshift == "0.2" ]]; then
+    zstr="z0/"
+fi
+
 
 fbase="/proj/shuiyao/"$simname"/WINDS/"
-odir=$fbase"z2/"
-redshift="2.0"
+odir=$fbase$zstr
 mkdir $odir
 # Input: $WINDS/winds.*
 # Output: $WINDS/z?/wid.dat; an ID array for all wind particles launched within the time window
+
 python select_winds.py $ncpu $redshift $fbase
+
 # Input: $WINDS/phews.* (The format for PhEW and GW are different); $WINDS/z?wid.dat
 # Output: $WINDS/z?/phews.*
-python select_tracks.py $ncpu $redshift $fbase
+python select_phewtracks.py $ncpu $redshift $fbase
+python select_rejoin.py $ncpu $redshift $fbase
+python find_host_haloes_for_phews.py $ncpu $redshift $simname
 
 cd $odir
+# Prepare initwinds.sorted and rejoin.sorted 
+cat initwinds.* > initwinds.all
+sort -n -k2,2 initwinds.all > initwinds.sorted
+rm -f initwinds.all 
+cat rejoin.* > rejoin.all
+sort -n -k2,2 rejoin.all > rejoin.sorted
+rm -f rejoin.all
+# Prepare phews.sorted
 # SHOULD CHECK HERE IF THE FILES IS TOO BIG
 sizetot=`du | awk -F " " '{print $1}'`
 echo "Total Size = "$sizetot" KB"
@@ -31,6 +60,7 @@ sort -n -k2,2 all.phews > sorted.phews
 rm -f all.phews
 
 cd -
+
 # Most relevant for PhEW:
 # select_winds_by_mvir.py: Select winds from certain time window, and group them according to their host halo mass
 # Input: $SIM/pid_z*.grp, $WINDS/winds.*

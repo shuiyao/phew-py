@@ -1,6 +1,6 @@
 #idx dtype name
 0    f8  atime
-1    i8  ID
+1    i8  PhEWKey
 2    f8  Mass
 3    f8  Vinit
 4    f8  Mstar
@@ -16,3 +16,4 @@
 14   f8  x
 15   f8  y
 16   f8  z
+17   i8  PID

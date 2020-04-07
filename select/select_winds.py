@@ -43,13 +43,18 @@ else:
 ids = []
 for icpu in range(NCPU):
     ifile = open(FBASE+"initwinds."+str(icpu), "r")
+    ofile = open(odir+"initwinds."+str(icpu), "w")    
     print "Doing File #", icpu
     for line in ifile:
         spt = line.split()
         if AMIN < spt[0] < AMAX:
+            # The Ids are PhEWKey 
             ids.append(spt[1])
+            ofile.write(line)
+    ifile.close()
+    ofile.close()
 print len(ids)," Wind Record Found!"
-ofile = open(odir+"wid.dat", "w")
+widfile = open(odir+"wid.dat", "w")
 for wid in ids:
-    ofile.write(wid+"\n")
-ofile.close()
+    widfile.write(wid+"\n")
+widfile.close()
