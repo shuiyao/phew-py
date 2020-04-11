@@ -35,6 +35,7 @@ python select_winds.py $ncpu $redshift $fbase
 # Output: $WINDS/z?/phews.*
 python select_phewtracks.py $ncpu $redshift $fbase
 python select_rejoin.py $ncpu $redshift $fbase
+python select_tracks.py $ncpu $redshift $fbase
 python find_host_haloes_for_phews.py $ncpu $redshift $simname
 
 cd $odir

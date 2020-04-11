@@ -20,7 +20,7 @@ else:
     #     amaxs = ["0.22", "0.35", "0.52", "0.85"]
     # if(NCPU == 128): # likely l25n144 
     #     amaxs = ["0.202", "0.335", "0.502", "0.835"]
-
+    amaxs = ["1.0", "1.0", "1.0", "1.0"]
     if(REDSHIFT == 4.0):
         AMIN, AMAX, odir = "0.200", amaxs[0], FBASE+"z4/"
     elif(REDSHIFT == 2.0):
@@ -57,8 +57,8 @@ for icpu in range(NCPU):
     tmid = time.time()
     # ifile = open("analytic_track."+str(icpu), "r")
     # ofile = open(odir+"analytic_track."+str(icpu), "w")
-    ifile = open(FBASE+"phews."+str(icpu), "r")
-    ofile = open(odir+"phews."+str(icpu), "w")
+    ifile = open(FBASE+"tracks."+str(icpu), "r")
+    ofile = open(odir+"tracks."+str(icpu), "w")
     ifile.readline()
     for line in ifile:
         spt = line.split()
