@@ -25,14 +25,14 @@ def find_fnames(modelname, mstr):
     soname = "/proj/shuiyao/"+modelname+"/"+"so_z"+snapstr+".sovcirc"    
     return sfrinfoname, soname
 
-SEPARATE_COLD_HOT_WINDS = False
-SHOW_WINDS_MIXED = True
+SEPARATE_COLD_HOT_WINDS = True
+SHOW_WINDS_MIXED = False
 
 FIGNAME = "sfhistory.pdf"
 FIGNAME = "/scratch/shuiyao/figures/tmp.pdf"
 CENTRAL_ONLY = True
 color_coldw = "cyan"
-color_hotw = "magenta"
+color_hotw = "pink"
 color_wind = "green"
 color_wmix = "cyan"
 HUBBLEPARAM = 0.7
@@ -84,8 +84,7 @@ class binned_by_aform():
             if(SEPARATE_COLD_HOT_WINDS):
                 ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
-            else:
-                ax.plot(self.mid, log10(self.wind/self.totalmass), linestyle=lstyle, color=color_wind)
+            ax.plot(self.mid, log10(self.wind/self.totalmass), linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, log10(self.wmix/self.totalmass), linestyle=lstyle, color=color_wmix)
                 ax.plot(self.mid, log10((self.total-self.wmix)/self.totalmass), linestyle=lstyle, color="lightgrey")
@@ -97,8 +96,7 @@ class binned_by_aform():
             if(SEPARATE_COLD_HOT_WINDS):            
                 ax.plot(self.mid, log10(self.wcold/self.totalmass/self.dz), linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, log10(self.whot/self.totalmass/self.dz), linestyle=lstyle, color=color_hotw)
-            else:
-                ax.plot(self.mid, log10(self.wind/self.totalmass/self.dz), linestyle=lstyle, color=color_wind)
+            ax.plot(self.mid, log10(self.wind/self.totalmass/self.dz), linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, log10(self.wmix/self.totalmass/self.dz), linestyle=lstyle, color=color_wmix)
             ax.plot(self.mid, log10(self.total/self.totalmass/self.dz), linestyle=lstyle, color="black")
@@ -109,8 +107,7 @@ class binned_by_aform():
             if(SEPARATE_COLD_HOT_WINDS):            
                 ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
-            else:
-                ax.plot(self.mid, self.wind/self.total, linestyle=lstyle, color=color_wind)
+            ax.plot(self.mid, self.wind/self.total, linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, self.wmix/self.total, linestyle=lstyle, color=color_wmix)
             ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="orange")
@@ -171,8 +168,8 @@ def build_abins_phew(stars, cumulative=False):
         elif(s['a_last'] < 0): # wind
             # Caution ~ Now Tmax are all > 0
             abins.wind[bidx] += s['Mass']
-            if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
-            else: abins.wcold[bidx] += s['Mass']
+            # if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
+            # else: abins.wcold[bidx] += s['Mass']
         else:
             abins.other[bidx] += s['Mass']
     if(cumulative == True):
@@ -245,8 +242,8 @@ def figure_sfhistory():
     # modelnames = ["l25n144-phew-m5kh100fs10","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
     # labels = ["mc5", "mc4kh50", "mc4kh100"]
 
-    modelnames = ["l25n144-phewoff","l25n144-phew-m4kh100fs10", "l25n144-phew-m5kh30fs10"] # mi    
-    labels = ["PhEWOff", "m4kh100fs10", "m5kh30fs10"]
+    modelnames = ["l25n144-phewoff","l25n144-phew-m5kh30fs10", "l25n144-phew-mach1"] # mi    
+    labels = ["PhEWOff", "m5kh30fs10", "m5kh30fs10"]
 
     # modelnames = ["l25n144-phew-m4kh100fs100","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
     # labels = ["mc4fs100", "mc4kh50", "mc4fs10"]
@@ -299,10 +296,9 @@ def figure_sfhistory():
             Line2D([0], [0], color="blue", linestyle="-", label="cold"),\
             Line2D([0], [0], color="red", linestyle="-", label="hot")]
     if(SEPARATE_COLD_HOT_WINDS):
-        lgds.append(Line2D([0], [0], color="cyan", linestyle="-", label="cold wind"))
-        lgds.append(Line2D([0], [0], color="magenta", linestyle="-", label="hot wind"))
-    else:
-        lgds.append(Line2D([0], [0], color="green", linestyle="-", label="wind"))
+        lgds.append(Line2D([0], [0], color=color_coldw, linestyle="-", label="cold wind"))
+        lgds.append(Line2D([0], [0], color=color_hotw, linestyle="-", label="hot wind"))
+    lgds.append(Line2D([0], [0], color="green", linestyle="-", label="wind"))
     if(SHOW_WINDS_MIXED):
         lgds.append(Line2D([0], [0], color="cyan", linestyle="-", label="wmix"))
     lgds.append(Line2D([0], [0], color="lightgrey", linestyle="-", label="M(z)/M(z=0)"))

@@ -57,8 +57,8 @@ for icpu in range(NCPU):
     tmid = time.time()
     # ifile = open("analytic_track."+str(icpu), "r")
     # ofile = open(odir+"analytic_track."+str(icpu), "w")
-    ifile = open(FBASE+"tracks."+str(icpu), "r")
-    ofile = open(odir+"tracks."+str(icpu), "w")
+    ifile = open(FBASE+"track."+str(icpu), "r")
+    ofile = open(odir+"track."+str(icpu), "w")
     ifile.readline()
     for line in ifile:
         spt = line.split()

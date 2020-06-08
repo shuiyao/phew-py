@@ -1,6 +1,6 @@
 import phew
 from astroconst import pc, ac
-from numpy import log10, log, sqrt, array
+from numpy import log10, log, sqrt, array, isnan
 import matplotlib.pyplot as plt
 from numpy import genfromtxt
 import matplotlib as mpl
@@ -11,15 +11,30 @@ from random import random
 GAMMA = 5./3.
 MCLOUD = 2.0e38
 CMAP = "jet"
-NSKIP = 8
+NSKIP = 1
 
 import config_mpl
 
-model = "l25n144-phew-m5kh100fs10"
+# model = "l25n144-phew-m5kh100fs10"
+model = "l25n144-phew-norecouple"
 filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
 fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"
 
-def select_particles(PhEWParticles):
+def select_particles(PhEWParticles, ntot=60, mmin=11.0, mmax=13.5):
+    selected = []
+    nbins = ntot / 2
+    mbins = [0] * nbins
+    dm = (mmax - mmin) / (float)(nbins)
+    for i, PhEWP in enumerate(PhEWParticles):
+        idx = (PhEWP.mvir - mmin) / dm
+        if(isnan(idx) or idx < 0.0 or idx >= nbins): continue
+        idx = (int)(idx)
+        if(mbins[idx] >= 2): continue
+        mbins[idx] += 1
+        selected.append(PhEWP)
+    return selected
+
+def select_particles_phew(PhEWParticles):
     selected = []
     random_norm = 0.5
     for i, PhEWP in enumerate(PhEWParticles):    
@@ -46,7 +61,7 @@ def remove_spurious_particles(track):
 def get_initwinds_and_rejoin_info(PhEWParticles, filename):
     # Note: some particles has HID = 0;
     # Their halo properties are from the last line of sovcirc. (Rvir < 0)
-    tab = genfromtxt(filename, names=True, dtype=('f8,f8,f8,f8,f8,f8,f8,f8,f8,i8'))
+    tab = genfromtxt(filename, names=True, dtype=('f8,f8,f8,f8,f8,f8,i8,f8,f8,f8,i8'))
     key_to_idx = dict()
     for i in range(len(tab)):
         if(tab[i]['Rvir'] > 0): key_to_idx[tab[i]['PhEWKey']] = i

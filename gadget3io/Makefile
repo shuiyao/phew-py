@@ -4,7 +4,7 @@ CFLAGS = -g
 TOOLS = allstars get_halo_particles
 #OPT += -DMARK64
 OBJS = gadget3io.o
-INCLS = gadget3io.h tipsydefs.h /usr/include/stdio.h
+INCL = gadget3io.h tipsydefs.h /usr/include/stdio.h
 LIBS = -lm
 
 #OPT = -DGALPARTS_INCLUDE_GAS # Find gas particles for galaxies?

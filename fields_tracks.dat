@@ -1,0 +1,10 @@
+#idx dtype name
+0    f8  atime
+1    i8  Key
+2    f8  Mass
+3    f8  Mgal
+4    f8  dr
+5    f8  dv
+6    f8  rho
+7    f8  T
+8    i8  flag

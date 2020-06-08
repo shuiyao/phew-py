@@ -44,8 +44,8 @@ else:
 
 ids = []
 for icpu in range(NCPU):
-    ifile = open(FBASE+"initwinds."+str(icpu), "r")
-    ofile = open(odir+"initwinds."+str(icpu), "w")    
+    ifile = open(FBASE+"winds."+str(icpu), "r")
+    ofile = open(odir+"winds."+str(icpu), "w")    
     print "Doing File #", icpu
     for line in ifile:
         spt = line.split()

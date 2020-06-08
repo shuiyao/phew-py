@@ -23,7 +23,7 @@
 #define UNIT_V 1.e5
 #define UNIT_M 1.989e43
 
-#define NMETALS 11
+//#define NMETALSHDF5 11
 //#define NMETALS 4
 
 #define Skip fread(&dummy,sizeof(dummy),1,fp)
@@ -66,25 +66,4 @@ struct gadget_dump
 } ;
 
 struct gadget_dump gheader ;
-
-struct particle_data
-{
-  float  Pos[3];
-  float  Vel[3];
-  int ID;
-  float Mass, Rho, Ne, Nh, Hsml, metal[NMETALS], fH2, Tmax;
-  float Sfr; // StellarFormationTime for star particles
-  float Temp;
-  float DelayTime;
-  int    Flag;
-#ifdef PHEW_EXTRA_OUTPUT
-  int Key;
-  float WindMass;
-  float Mcloud;
-  float LastSFTime;
-  float Vinit;
-#endif  
-};
-
-struct particle_data *particles;
 

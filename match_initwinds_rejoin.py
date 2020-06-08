@@ -40,7 +40,7 @@ def load_tables():
     print "Loading tables ... "
     FieldsInit = phew.PhEWFields("fields_initwinds.dat")
     filename = "/proj/shuiyao/"+MODEL+"/WINDS/"+zstr+"/initwinds.sorted"
-    info_fields = FieldsInit.get_field_info(["atime","Mstar","PhEWKey","T_a","Vinit"], verbose=True)
+    info_fields = FieldsInit.get_field_info(["atime","Mass","Mstar","PhEWKey","T_a","Vinit"], verbose=True)
     tabinit = phew.read_phew_fields(filename, info_fields)
 
     FieldsRejoin = phew.PhEWFields("fields_rejoin.dat")
@@ -65,7 +65,7 @@ def match_tables(tabi, tabr, tabh, filename):
     print "Rejoined: ", len(tabr)
     counth, countr = 0, 0
     fout = open(filename, "w")
-    fout.write("#a_i Vinit T_a a_rejoin M_c Mach LogMvir LogMsub Rvir PhEWKey\n")
+    fout.write("#a_i Mass Vinit T_a a_rejoin M_c Mach flag LogMvir LogMsub Rvir PhEWKey\n")
     for i in range(len(tabi)):
         key = tabi['PhEWKey'][i]
         if(key in key_to_idx_r): countr += 1
@@ -73,14 +73,16 @@ def match_tables(tabi, tabr, tabh, filename):
         # Sometimes there are very few PhEW that rejoined.
         # if(key in key_to_idx_r and key in key_to_idx_h):
         if(key in key_to_idx_h):
-            fout.write("%7.5f %6.1f %5.3f " %
-                       (tabi[i]['atime'], tabi[i]['Vinit'], log10(tabi[i]['T_a'])))
+            
+            fout.write("%7.5f %7.5e %6.1f %5.3f " %
+                       (tabi[i]['atime'], tabi[i]['Mass'],\
+                        tabi[i]['Vinit'], log10(tabi[i]['T_a'])))
             if(key in key_to_idx_r):
                 rejoin = tabr[key_to_idx_r[key]]
-                fout.write("%7.5f %5.3f %5.2f " %
-                           (rejoin['atime'], rejoin['M_c'], rejoin['vrel']/rejoin['cs_a']))
+                fout.write("%7.5f %5.3f %5.2f %3d " %
+                           (rejoin['atime'], rejoin['M_c'], rejoin['vrel']/rejoin['cs_a'], rejoin['flag']))
             else:
-                fout.write("%7.5f %5.3f %5.2f " % (-1.0, -1.0, -1.0))
+                fout.write("%7.5f %5.3f %5.2f %3d " % (-1.0, -1.0, -1.0, -1))
             halo = tabh[key_to_idx_h[key]]
             fout.write("%6.3f %6.3f %6.1f " % (halo['LogMvir'], halo['LogMsub'], halo['Rvir']))
             fout.write("%8d\n" % (key))
