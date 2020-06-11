@@ -1,3 +1,37 @@
+L25N144 TEST PROCEDURE:
+  - $SCI/PHEW_SCRIPTS/batch_l25n144.sh
+  - $SCI/PHEW_TEST: Plot GSMFs, etc.
+  - $SCI/phew/batch.sh:
+    - $SCI/gadget3io/allstars.csh
+        - If PhEW OFF. Change the flag.
+    - $SCI/gadget3io/analyze/...
+    - $SCI/phew/select/select.sh
+    - $SCI/phew/select/find_host_haloes_for_phews.py (Fetch Mvir, Msub, ...)
+    - $SCI/phew/loadhdf5
+
+OUTPUT FILE FORMAT
+$SCIDATA/windsnap/halo_*.wind:
+  - idx, x[Lbox], y, z, m[msun], mZ, h[kpc], Rc[kpc], Tc, Nc, Mc[Mc,0], flag
+
+$SCIDATA/newwind/$MODEL/phewsinfo.z?:
+  - a_i, mass, vi[km/s], log(Ta), a_r, Mc[Mc,0], Mach, flag, LogMvir, LogMsub, Rvir, Key
+
+$SCIDATA/newwind/$MODEL/windsinfo.z?:
+  - Key, Mvir, Rvir, vi[km/s], v25[km/s], rreturn
+
+$SCIDATA/newwind/$MODEL/mlossinfo.z?:
+  - Key, Mvir, Rvir,
+    R25[kpc], R50[kpc], R75[kpc], Rlast[kpc],
+    Mach25, Mach50, Mach75, Machlast
+
+$DATADIR/$MODEL/snapshot_???.phews:
+  - idx Key HID LogMvir LogMsub Rvir[kpc]
+
+$DATADIR/$MODEL/snapshot_???.phewparts:
+  - idx rho[g/cm-3] LogT f_c f_w LastSFTime
+
+--------------------------------
+
 PHEW_SCRIPTS: batch_l25n144.sh
 
 PHEW_TEST: Check gsmfs, smhms, stuff

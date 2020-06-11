@@ -1,3 +1,5 @@
+# write_wind_features()
+# write_mloss_info()
 # V25Vc()
 # figure()
 # draw_phase_diagram_contour()
@@ -23,19 +25,27 @@ GAMMA = 5./3.
 CMAP = "jet"
 NSKIP = 1
 
-REDSHIFT = 1.0
+zi = 1
+
+zs = [2.0, 1.0, 0.2]
+zstrs = ["z2", "z1", "z0"]
+
+REDSHIFT, zstr = zs[zi], zstrs[zi]
+
 #modelname = "m5kh30fs10"
 #modelname = "m5kh30fs10"
-modelname = "norecouple"
+modelname = "fa"
 model = "l25n144-phew-"+modelname
-model = "l25n144-gadget3"
+MC_INIT = 2.0e38
 filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.tracks"
-fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"
+fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo."+zstr
+fwindsinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/windsinfo."+zstr
+fmlossinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/mlossinfo."+zstr
+
 gridfile = "/scratch/shuiyao/sci/PHEW_TEST/"+model+"/"+"mrhot_z0_100"
-fwindsinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/windsinfo.z1"
 
 key_to_phew = dict();
-filename_phews = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
+filename_phews = "/proj/shuiyao/"+model+"/WINDS/"+zstr+"/sorted.phews"
 
 class PhEWFields():
     '''
@@ -426,6 +436,33 @@ def write_wind_features(foutname=fwindsinfo):
             outstr += "\n"
             fout.write(outstr)
     print writecount, count, len(PhEWParticles)
+    fout.close()
+
+def write_mloss_features(foutname=fmlossinfo):
+    PhEWParticles = phew.load_particles(filename_phews, fphewsname) # phews    
+    fout = open(foutname, "w")
+    fout.write("#ID Mvir Rvir R75 R50 R25 Rlast Mach75 Mach50 Mach25 Machlast\n")
+    for PhEWP in PhEWParticles:
+        flag = remove_spurious_particles(PhEWP.track)
+        counter_spurious_particles[flag] += 1
+        if(flag): continue
+        if(isnan(PhEWP.mvir) or PhEWP.mvir < 0): continue
+        r25, r50, r75, rlast = -1., -1., -1., -1.
+        mach25, mach50, mach75, machlast = -1., -1., -1., -1.
+        PhEWP.track['M_cloud'] /= MC_INIT
+        for i in range(len(PhEWP.track['dr']))[1:]:
+            if(r75 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.75):
+                r75, mach75 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+            if(r50 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.50):
+                r50, mach50 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+            if(r25 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.25):
+                r25, mach25 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+        if(r25 > 0):
+            rlast, machlast = abs(PhEWP.track['dr'][-1]), PhEWP.track['Mach'][-1]
+        outstr = "%10d %6.3f %6.1f %6.1f %6.1f %6.1f %6.1f %6.3f %6.3f %6.3f %6.3f\n" % \
+                 (PhEWP.key, PhEWP.mvir, PhEWP.rvir, \
+                  r75, r50, r25, rlast, mach75, mach50, mach25, machlast)
+        fout.write(outstr)
     fout.close()
 
 XMIN, XMAX = 30., 600.

@@ -26,3 +26,6 @@ if [ ! -e /scratch/shuiyao/scidata/newwind/$model ]; then
 fi
 python match_initwinds_rejoin.py $model z1 078
 python match_initwinds_rejoin.py $model z0 100
+
+# To generate V25, use tracks.py:write_wind_features()
+# To generate properties at t25, t50, t75, ..., use tracks.py:write_mloss_info()

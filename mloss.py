@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import ioformat
 from scipy import logspace, array, linspace, sqrt, histogram, log10, histogram2d, ndimage, pi, median, meshgrid
 import bin1d
+from numpy import genfromtxt
 from matplotlib.colors import LogNorm
 from astroconst import pc, ac
 from matplotlib import gridspec
@@ -10,23 +11,22 @@ from matplotlib.mlab import griddata
 from scipy import rand
 import matplotlib as mpl
 import matplotlib.patches as mpatches
-mpl.rcParams["mathtext.default"] = "tt"
-mpl.rcParams["axes.labelsize"] = "large"
+import config_mpl
 
+# USEFUL FUNCTIONS:
 
-# VinitVc(wps, 4, foutname="output.dat")
-# field = "p6n72gw"
-#field = "p25n144rwlII"
-#modelname = "p25n144rwlIII"
-modelname = "p25n144phewIV"
-REDSHIFT = 2.0
-subwfolder = "z2"
+# PARENT: /scratch/shuiyao/sci/newwind/mloss/mloss.py
+
+modelname = "l25n144-phew-fa"
+REDSHIFT = 1.0
+subwfolder = "z1"
 MC_INIT = 2.0e38
 ascale = 1./(REDSHIFT+1.)
 # Mgasp = 82656250.0 # P6N36
 Mgasp = 9.3e7
 outputbase = "/scratch/shuiyao/scidata/newwind/"
-fwind = outputbase+"windsinfo."+modelname+"."+subwfolder
+fwind = outputbase+modelname+"/"+"phewsinfo."+subwfolder
+fmloss = outputbase+modelname+"/"+"mlossinfo."+subwfolder
 #unit_m = 5995.4321936
 #unit_m = 433697.735404 * (12./25.)**3
 unit_m = 433697.735404
@@ -76,7 +76,7 @@ def Mclast():
     plt.show()
 
 def plot_last_signal():
-    mvir, rvir, rlast, mclast = ioformat.rcol(fwind, [1,2,6,5], linestart=1)
+    mvir, rvir, rlast, mclast = ioformat.rcol(fwind, [8, 10, 6, 5], linestart=1)
     mbin_min = [11.25, 11.75, 12.25, 12.75]
     mbin_max = [11.75, 12.25, 12.75, 13.75]
     clrs = ["magenta", "red", "orange", "yellow"]
@@ -117,7 +117,7 @@ def plot_last_signal():
     plt.show()
 
 def plot_mloss_radius():
-    fig = plt.figure(1, figsize=(6,9))
+    fig = plt.figure(1, figsize=(7,9))
     gs = gridspec.GridSpec(2,1,height_ratios=[1,1])
     ax1 = plt.subplot(gs[0])
     Massloss_radius(ax=ax1, rnorm=False)
@@ -125,7 +125,8 @@ def plot_mloss_radius():
     ax2 = plt.subplot(gs[1])
     Massloss_radius(ax=ax2, rnorm=True)
     setp(ax1.get_xticklabels(), visible=False)
-    fig.subplots_adjust(hspace=0)
+    fig.subplots_adjust(hspace=0, left=0.15)
+    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
     plt.show()
 
 def plot_mloss_velocity():
@@ -140,49 +141,41 @@ def plot_mloss_velocity():
     fig.subplots_adjust(hspace=0)
     plt.show()
 
-def Massloss_radius(fin=fwind, rnorm=False, ax=[]):
+def Massloss_radius(fin=fmloss, rnorm=False, ax=[]):
     mclast_cut = 0.1
-    # ax = plt.figure(1, figsize=(8,8)).add_subplot(111)
-    # mvir, rvir, r25, r50, r75, rlast, mclast = ioformat.rcol(fin, [1,2,7,8,9,6,5], linestart=1)
-    mvir, rvir, r25, r50, r75, rlast = [], [], [], [], [], []
-    f = open(fin, "r")
-    f.readline()
-    for line in f:
-        spt = line.split()
-        if(float(spt[5]) <= mclast_cut and float(spt[14]) < 15.0):
-            mvir.append(float(spt[1]))
-            rvir.append(float(spt[2]))
-            r25.append(float(spt[7]))
-            r50.append(float(spt[8]))
-            r75.append(float(spt[9]))
-            rlast.append(float(spt[6]))
+    phewp = genfromtxt(fin, names=True)
+    # SELECT ONLY THOSE ANNIHILATED
+    phewp = phewp[phewp['Rlast'] > 0]
+    r75, r50, r25, rlast = phewp['R75'], phewp['R50'], phewp['R25'], phewp['Rlast']
+    mvir = phewp['Mvir']
     if(rnorm==True):
-        rvir = array(rvir)
-        r25 /= rvir
-        r50 /= rvir
-        r75 /= rvir
-        rlast /= rvir
+        r25 /= phewp['Rvir']
+        r50 /= phewp['Rvir']
+        r75 /= phewp['Rvir']
+        rlast /= phewp['Rvir']
     print max(mvir), min(mvir)
 
-    plotmedian(mvir, rlast, ax, nbins=20, clr="yellow", alphavalue=alphavalue)    
-    plotmedian(mvir, r75, ax, nbins=20, clr="orange", alphavalue=alphavalue)
-    plotmedian(mvir, r50, ax, nbins=20, clr="red", alphavalue=alphavalue)
-    plotmedian(mvir, r25, ax, nbins=20, clr="magenta", alphavalue=alphavalue)
+    NBIN = 10
+    plotmedian(mvir, rlast, ax, nbins=NBIN, clr="yellow", alphavalue=alphavalue)    
+    plotmedian(mvir, r25, ax, nbins=NBIN, clr="orange", alphavalue=alphavalue)
+    plotmedian(mvir, r50, ax, nbins=NBIN, clr="red", alphavalue=alphavalue)
+    plotmedian(mvir, r75, ax, nbins=NBIN, clr="magenta", alphavalue=alphavalue)
 
-    ax.set_xlim(11.5,13.5)
+    ax.set_xlim(11.5,13.0)
     ax.set_xlabel(r'$Log(M_{vir}/M_\odot)$')
     if(rnorm == True):
         ax.set_ylabel(r'$r/R_{vir}$')
-        ax.set_ylim(0.,2.5)        
+        ax.set_ylim(0.,2.5)
+        ax.set_yticks([0., 0.5, 1.0, 1.5, 2.0])
     else:
         ax.set_ylabel("r [kpc]")
-        ax.set_ylim(0.,400.)
+        ax.set_ylim(0.,600.)
     legends = []
     legends.append(mpatches.Patch(color="yellow"))
     legends.append(mpatches.Patch(color="orange"))
     legends.append(mpatches.Patch(color="red"))
     legends.append(mpatches.Patch(color="magenta"))
-    plt.legend(legends, [r'$r_{last}$', r'$r_{75}$', r'$r_{50}$', r'$r_{25}$'], loc=2)
+    plt.legend(legends, [r'$r_{last}$', r'$r_{25}$', r'$r_{50}$', r'$r_{75}$'], loc=2)
     # ax.text(0.8, 0.11, "+ V10/Vinit", color="blue", transform=ax.transAxes)
 
 def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
@@ -237,7 +230,7 @@ def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
 def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4):
     x, y = bin1d.subsample(x0, y0, nonzero=True)
     s = bin1d.bin1d(x, y, nbins=nbins, bounds=boundsvalue)
-    xline, yline = s.value, s.median
+    xline, yline = s.cen, s.median
     uline, lline = s.ubound, s.lbound
     for i in range(len(yline))[1:-1]:
         if(yline[i] == 0):
