@@ -32,12 +32,10 @@ zstrs = ["z2", "z1", "z0"]
 
 REDSHIFT, zstr = zs[zi], zstrs[zi]
 
-#modelname = "m5kh30fs10"
-#modelname = "m5kh30fs10"
-modelname = "fa"
-model = "l25n144-phew-"+modelname
-MC_INIT = 2.0e38
-filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.tracks"
+modelname = "m4"
+model = "l25n288-phew-"+modelname
+MC_INIT = 2.0e37
+# filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.tracks"
 fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo."+zstr
 fwindsinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/windsinfo."+zstr
 fmlossinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/mlossinfo."+zstr
@@ -286,6 +284,7 @@ def load_particles(phew=True):
     pparts = create_phew_particles(tab)
     if(phew == True):
         get_initwinds_and_rejoin_info(pparts, fphewsname)
+    print "Load ", len(pparts), "PhEW Particles."
     return pparts
 
 def draw_field(pparts, nskip=NSKIP, logyscale=False):
@@ -391,9 +390,10 @@ def write_wind_features(foutname=fwindsinfo):
     fout = open(foutname, "w")
     fout.write("#ID Mvir Rvir Vinit V25 Rreturn\n")
     count, writecount = 0, 0
-    for PhEWP in PhEWParticles:
+    for n, PhEWP in enumerate(PhEWParticles):
         flag = remove_spurious_particles(PhEWP.track)
         counter_spurious_particles[flag] += 1
+        if(flag == 5): print n
         if(flag): continue
         PhEWP.mvir = 10. ** PhEWP.mvir
         vc, v25, vinit = 0., 0., 0.            
@@ -421,7 +421,7 @@ def write_wind_features(foutname=fwindsinfo):
         if(len(ddr) == 0):
             continue
         if(PhEWP.rvir == -1 or isnan(PhEWP.mvir)):
-            print PhEWP.key
+            print "Warning: ", PhEWP.key, PhEWP.mvir, PhEWP.rvir
             continue
         if(max(ddr) < 100. and min(ddr) > -100.):
             writecount += 1
@@ -435,33 +435,38 @@ def write_wind_features(foutname=fwindsinfo):
             outstr += " "+str(vinit)+" "+str(v25)+" "+str(rreturn)
             outstr += "\n"
             fout.write(outstr)
-    print writecount, count, len(PhEWParticles)
+    print counter_spurious_particles            
+    print "Written, Count, All: ", writecount, count, len(PhEWParticles)
     fout.close()
 
-def write_mloss_features(foutname=fmlossinfo):
+def write_mloss_info(foutname=fmlossinfo):
     PhEWParticles = phew.load_particles(filename_phews, fphewsname) # phews    
     fout = open(foutname, "w")
-    fout.write("#ID Mvir Rvir R75 R50 R25 Rlast Mach75 Mach50 Mach25 Machlast\n")
+    fout.write("#ID Mvir Rvir R75 R50 R25 Rlast t75 t50 t25 tlast Mach75 Mach50 Mach25 Machlast\n")
     for PhEWP in PhEWParticles:
         flag = remove_spurious_particles(PhEWP.track)
         counter_spurious_particles[flag] += 1
-        if(flag): continue
+        # if(flag): continue
         if(isnan(PhEWP.mvir) or PhEWP.mvir < 0): continue
         r25, r50, r75, rlast = -1., -1., -1., -1.
         mach25, mach50, mach75, machlast = -1., -1., -1., -1.
+        t25, t50, t75, tlast = -1., -1., -1., -1.        
         PhEWP.track['M_cloud'] /= MC_INIT
+        dtime = (tcosmic(PhEWP.track['atime']) - tcosmic(PhEWP.track['atime'][0])) / 1.e6          
         for i in range(len(PhEWP.track['dr']))[1:]:
             if(r75 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.75):
-                r75, mach75 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+                r75, mach75, t75 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i], dtime[i]
             if(r50 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.50):
-                r50, mach50 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+                r50, mach50, t50 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i], dtime[i]
             if(r25 < 0.0 and PhEWP.track['M_cloud'][i] <= 0.25):
-                r25, mach25 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i]
+                r25, mach25, t25 = abs(PhEWP.track['dr'][i]), PhEWP.track['Mach'][i], dtime[i]
         if(r25 > 0):
-            rlast, machlast = abs(PhEWP.track['dr'][-1]), PhEWP.track['Mach'][-1]
-        outstr = "%10d %6.3f %6.1f %6.1f %6.1f %6.1f %6.1f %6.3f %6.3f %6.3f %6.3f\n" % \
+            rlast, machlast, tlast = abs(PhEWP.track['dr'][-1]), PhEWP.track['Mach'][-1], dtime[i]
+        outstr = "%10d %6.3f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.3f %6.3f %6.3f %6.3f\n" % \
                  (PhEWP.key, PhEWP.mvir, PhEWP.rvir, \
-                  r75, r50, r25, rlast, mach75, mach50, mach25, machlast)
+                  r75, r50, r25, rlast, \
+                  t75, t50, t25, tlast,
+                  mach75, mach50, mach25, machlast)
         fout.write(outstr)
     fout.close()
 

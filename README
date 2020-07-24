@@ -56,4 +56,6 @@ V25Vc: $SCI/newwind/
 
 Accretion: $SCI/phew/gadget3io/allstars.csh
 
+See also $SCI/Huang.2019b for some plotting routines, e.g., postshock.py
+
 

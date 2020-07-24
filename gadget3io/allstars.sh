@@ -14,20 +14,28 @@
 #set modelname="l25n144-phewoff"
 
 modelname=$1
+lbox=$2
 flag=1 # PHEW FLAG: 1 = PHEW
 
 if [ ! $modelname ]; then
     echo "allstars.sh: Need model name. Force exit."
     exit
 fi
+if [ ! $lbox ]; then
+    echo "allstars.sh: Need boxsize. Force exit."
+    exit
+fi
 
+# !!!!! DON'T FORGET TO CHANGE UNIT_M in allstars.py
 mkdir /scratch/shuiyao/scidata/gadget3io/$modelname
 
-./allstars $modelname 108
-# ./allstars $modelname 58 all
-python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
-python stars_by_mvir_gizmo.py $modelname 108 mh12 $flag
-python stars_by_mvir_gizmo.py $modelname 108 mh13 $flag
+./allstars $modelname 88 $lbox all
+python allstars.py $modelname 088 $lbox $flag
+
+# ./allstars $modelname 108
+# python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
+# python stars_by_mvir_gizmo.py $modelname 108 mh12 $flag
+# python stars_by_mvir_gizmo.py $modelname 108 mh13 $flag
 # python stars_by_mvir_gadget3.py $modelname 108 mh11 $flag
 # python stars_by_mvir_gadget3.py $modelname 108 mh12 $flag
 # python stars_by_mvir_gadget3.py $modelname 108 mh13 $flag

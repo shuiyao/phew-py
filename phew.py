@@ -8,12 +8,13 @@ from random import random
 import config_mpl
 
 GAMMA = 5./3.
-MASS_CLOUD = 2.0e38
 CMAP = "jet"
 NSKIP = 1
 
-modelname = "norecouple"
-model = "l25n144-phew-"+modelname
+# figure()
+modelname = "m4"
+MASS_CLOUD = 2.0e37
+model = "l50n288-phew-"+modelname
 filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
 fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"    
 
@@ -154,7 +155,7 @@ def select_hard_particles(PhEWParticles):
             selected.append(PhEWP)
     return selected
 
-def select_particles(PhEWParticles, ntot=60, mmin=11.0, mmax=13.5):
+def select_particles(PhEWParticles, ntot=90, mmin=11.0, mmax=13.5):
     selected = []
     nbins = ntot / 2
     mbins = [0] * nbins
@@ -297,8 +298,8 @@ def figure():
     panels.ylabels[5] = r"$\rho_\mathrm{a}$"            
     fig, axs = draw(frm)
 
-    # parts_to_show = select_particles(pparts)
-    parts_to_show = select_hard_particles(pparts)    
+    parts_to_show = select_particles(pparts)
+    # parts_to_show = select_hard_particles(pparts)    
     draw_phew_particles(parts_to_show, axs[0], 'time', 'r/rvir', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.4)
     print counter_spurious_particles
     draw_phew_particles(parts_to_show, axs[1], 'time', 'Mach', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.4)

@@ -22,28 +22,34 @@
 
 #define BOXSIZE 1.0
 #define HALFBOX 0.5
-#define UNIT_M 433697.735404
-/* #define UNIT_M 3469581.88 */
+#define UNIT_M_L25 433697.735404
+#define UNIT_M_L50 3469581.88
 
 /* char grpname[MAX_LEN_FILENAME]; */
 /* char sogrpname[MAX_LEN_FILENAME]; */
 int flag_allstars = 0; /* if 1, dump all stars. Otherwise, only dump stars from a certain Mvir range. */
+
+double unit_mass;
 
 void main(int argc, char **argv)
 {
   FILE *fgalslst;
   int i, gid, hid;
   int snapnum;
+  double lbox;
   char snapstr[4];
   char modelname[40];
 
   snapnum = atoi(argv[2]);
   /* modelname is argv[1] */
   strcpy(modelname, argv[1]);
-  if((argc == 4) && (!strcmp(argv[3], "all"))){
+  lbox = atof(argv[3]);
+  if((argc == 5) && (!strcmp(argv[4], "all"))){
     fprintf(stdout, "Doing every single star.\n");
     flag_allstars = 1;
   }
+
+  unit_mass = UNIT_M_L50 * pow(lbox / 50.0, 3);
   
   /* strcat(strcpy(basename, "/scratch/shuiyao/data/"), modelname); */
   /* strcat(strcpy(skidbasename, "/scratch/shuiyao/data/"), modelname); */
@@ -86,7 +92,7 @@ void main(int argc, char **argv)
     fprintf(fout, "#Idx ID GID HID Mass Tmax Age\n");
     for(i=0;i<theader.nstar;i++){
       pidx = i + ioffset_star;
-      fprintf(fout, "%8d %8d %5d %5d %7.5e %5.3f %7.5e\n",
+      fprintf(fout, "%8d %8d %5d %5d %7.5e %5.3f %7.5f\n",
 	      pidx, pids[pidx], galid[pidx], sohid[pidx],
 	      sp[i].mass, aux_sp[i].tmax, aux_sp[i].age);	      
 	      /* sp[i].mass, fabs(aux_sp[i].tmax), aux_sp[i].age); */
@@ -99,7 +105,7 @@ void main(int argc, char **argv)
     sprintf(sogtpname, "%s/so_z%s.sogtp", skidbasename, snapstr);
     read_sogtp(sogtpname);
     for(i=0;i<soheader.nstar;i++){ /* Convert Msub to log(msolar) */
-      if(sohalos[i].mass > 0) sohalos[i].mass = log10(sohalos[i].mass * UNIT_M / 0.7) + 10.;
+      if(sohalos[i].mass > 0) sohalos[i].mass = log10(sohalos[i].mass * unit_mass / 0.7) + 10.;
     }
     sprintf(outm11, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.stars.mh11", modelname, modelname, snapstr);
     sprintf(outm12, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.stars.mh12", modelname, modelname, snapstr);
@@ -115,7 +121,7 @@ void main(int argc, char **argv)
       hid = sohid[pidx];
       if(hid > 0){
 	mvir = sohalos[hid-1].mass;
-	sprintf(printline, "%8d %8d %5d %5d %7.5e %5.3f %7.5e\n",
+	sprintf(printline, "%8d %8d %5d %5d %7.5e %5.3f %7.5f\n",
 		pidx, pids[pidx], galid[pidx], sohid[pidx],
 		sp[i].mass, aux_sp[i].tmax, aux_sp[i].age);	
 		/* sp[i].mass, fabs(aux_sp[i].tmax), aux_sp[i].age); */

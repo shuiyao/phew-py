@@ -72,8 +72,7 @@ def match_tables(tabi, tabr, tabh, filename):
         if(key in key_to_idx_h): counth += 1        
         # Sometimes there are very few PhEW that rejoined.
         # if(key in key_to_idx_r and key in key_to_idx_h):
-        if(key in key_to_idx_h):
-            
+        if(key in key_to_idx_h):            
             fout.write("%7.5f %7.5e %6.1f %5.3f " %
                        (tabi[i]['atime'], tabi[i]['Mass'],\
                         tabi[i]['Vinit'], log10(tabi[i]['T_a'])))

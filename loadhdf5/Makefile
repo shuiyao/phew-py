@@ -8,7 +8,8 @@ HDF5LIB = -L/home/shuiyao/hdf5/lib -lhdf5 -lz
 OPT += -DH5_USE_16_API
 #OPT += -DNMETALS=11 # How many species are tracked in the HDF5 "Metallicity"  block? If not set correctly, code returns segmentation fault after the output "Reading GAS for file #%d"
 
-#OPT += -DPHEW_EXTRA_OUTPUT
+OPT += -DPHEW_EXTRA_OUTPUT
+OPT += -DPHEW_TRACK_INFO
 
 CC= gcc
 CLINK=gcc

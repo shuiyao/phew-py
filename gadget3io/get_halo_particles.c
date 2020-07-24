@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include <stdbool.h>
 #include <math.h>
 #include "tipsydefs.h"
 #include "gadget3io.h"
@@ -25,10 +26,46 @@ char idnumoutname[MAX_LEN_FILENAME];
 int flag_allstars = 0; /* if 1, dump all stars. Otherwise, only dump stars from a certain Mvir range. */
 struct tipsy_header theaderout;
 
+int hid;
+
+double poslim[3][2];
+
+void set_limits_positions(){
+  poslim[0][0] = ;
+  poslim[0][1] = ;
+  poslim[1][0] = ;
+  poslim[1][1] = ;
+  poslim[2][0] = ;
+  poslim[2][1] = ;  
+}
+
+bool select(int i, int type){
+  int pos[3];
+  int k, offset, dposk;
+  if(type == 0) {
+    offset = 0;
+    pos = gp[i].pos;
+  } else if(type == 1){
+    offset = theader.nsph;
+    pos = dp[i].pos;
+  } else if(type == 4){
+    offset = theader.nsph + theader.ndark;
+    pos = sp[i].pos;
+  } else
+      return false;
+  for(k=0; k<3; k++){
+    dposk = fabs(pos[k] - poslim[k][0]);
+    if(dposk >= HALFBOX) dposk = BOXSIZE - dposk;
+  }
+  return sohid[idx] == hid;
+}
+
 void main(int argc, char **argv)
 {
-  int i, gid, hid;
+  int i, gid;
   int snapnum;
+
+  set_limits_positions();
 
   hid = atoi(argv[3]);
   strcpy(sogrpname, argv[2]);
@@ -62,19 +99,25 @@ void main(int argc, char **argv)
   Ndark = 0;
   Nstar = 0;
   Noffset = 0;
+
   for(i=0;i<theader.nsph;i++)
-    if(sohid[Noffset+i] == hid){
-      Nsph ++; 
+    if(select(Noffset+i)){
+      gp[Nsph++] = gp[i];
+      aux_gp[Nsph] = aux_gp[i];
+      pids[Noffset+Nsph] = pids[Noffset+i];
     }
   Noffset = theader.nsph;
-  for(i=0;i<theader.ndark;i++)
-    if(sohid[Noffset+i] == hid){
-      Ndark ++; 
+  for(i=0;i<theader.nsph;i++)
+    if(select(Noffset+i)){
+      dp[Ndark++] = dp[i];
+      pids[Noffset+Ndark] = pids[Noffset+i];
     }
   Noffset = theader.nsph + theader.ndark;
-  for(i=0;i<theader.nstar;i++)
-    if(sohid[Noffset+i] == hid){
-      Nstar ++; 
+  for(i=0;i<theader.nsph;i++)
+    if(select(Noffset+i)){
+      sp[Nstar++] = sp[i];
+      aux_sp[Nstar] = aux_sp[i];
+      pids[Noffset+Nstar] = pids[Noffset+i];
     }
   theaderout.time = theader.time;
   theaderout.nbodies = Nsph + Ndark + Nstar;
@@ -92,26 +135,22 @@ void main(int argc, char **argv)
   fwrite(&theaderout, sizeof(theaderout), 1, fbinout);
   /* Read and Write */
   Noffset = 0;
-  for(i=0;i<theader.nsph;i++)
-    if(sohid[Noffset+i] == hid){
-      fwrite(&gp[i], sizeof(struct gas_particle), 1, fbinout);
-      fwrite(&aux_gp[i], sizeof(struct aux_gas_data), 1, fauxout);
-      fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
-    }
+  for(i=0;i<Nsph;i++){
+    fwrite(&gp[i], sizeof(struct gas_particle), 1, fbinout);
+    fwrite(&aux_gp[i], sizeof(struct aux_gas_data), 1, fauxout);
+    fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
+  }
   Noffset = theader.nsph;
-  for(i=0;i<theader.ndark;i++)
-    if(sohid[Noffset+i] == hid){
-      fwrite(&dp[i], sizeof(struct dark_particle), 1, fbinout);
-      fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
-    }
+  for(i=0;i<Ndark;i++){
+    fwrite(&dp[i], sizeof(struct dark_particle), 1, fbinout);
+    fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
+  }
   Noffset = theader.nsph + theader.ndark;
-  for(i=0;i<theader.nstar;i++)
-    if(sohid[Noffset+i] == hid){
-      fwrite(&sp[i], sizeof(struct star_particle), 1, fbinout);
-      fwrite(&aux_sp[i], sizeof(struct aux_star_data), 1, fauxout);
-      fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
-    }
-  
+  for(i=0;i<Nstar;i++){
+    fwrite(&sp[i], sizeof(struct star_particle), 1, fbinout);
+    fwrite(&aux_sp[i], sizeof(struct aux_star_data), 1, fauxout);
+    fwrite(&pids[Noffset+i], sizeof(int), 1, fidnumout);      
+  }
   fclose(fbinout);
   fclose(fauxout);
   fclose(fidnumout);

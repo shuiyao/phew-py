@@ -36,6 +36,9 @@ struct particle_data
   float Mcloud;
   float LastSFTime;
   float Vinit;
+#endif
+#ifdef PHEW_TRACK_INFO
+  float TrackInfo[4];
 #endif  
 };
 

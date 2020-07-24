@@ -16,15 +16,16 @@ else:
     NCPU = int(sys.argv[1])
     REDSHIFT = float(sys.argv[2])
     FBASE = sys.argv[3]
-    amaxs = ["1.0", "1.0", "1.0", "1.0"]
+    # acosmic(tcosmic(amin) + 1.5e9) Track for 1.5 Gyr
+    amaxs = ["0.318264", "0.434506", "0.593577", "0.934432"]
     if(REDSHIFT == 4.0):
         AMIN, AMAX, odir = "0.200", amaxs[0], FBASE+"z4/"
     elif(REDSHIFT == 2.0):
-        AMIN, AMAX, odir = "0.333", amaxs[1], FBASE+"z2/"
+        AMIN, AMAX, odir = "0.333333", amaxs[1], FBASE+"z2/"
     elif(REDSHIFT == 1.0):
         AMIN, AMAX, odir = "0.500", amaxs[2], FBASE+"z1/"
     elif(REDSHIFT == 0.2):
-        AMIN, AMAX, odir = "0.833", amaxs[3], FBASE+"z0/"
+        AMIN, AMAX, odir = "0.833333", amaxs[3], FBASE+"z0/"
     else:
         print errormsg
         sys.exit(1)
@@ -37,6 +38,7 @@ else:
 
 widfile = odir+"wid.dat"
 wids = ioformat.rcol(widfile, [0], [0])
+wids = set(wids) # Enabling fast search with wid in wids
 print len(wids), "Wind IDs read..."
 
 tstart = time.time()
@@ -49,9 +51,11 @@ for icpu in range(NCPU):
     ifile.readline()
     for line in ifile:
         spt = line.split()
-        if(float(spt[0]) > 1): continue # a > 1, never should happen
+        if(spt[0] > "1"): continue # a > 1, never should happen
+        if(spt[0] < AMIN): continue # a < amin, Not selected
+        if(spt[0] > AMAX): continue # a > amax (1.5 Gyr after amin)        
         wid = int(spt[1])
-        if wid in wids:
+        if wid in wids: # <----- The time consuming line.
             ofile.write(line)
     ifile.close()
     ofile.close()

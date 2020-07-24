@@ -18,7 +18,7 @@ else:
     if(NCPU == 128): # likely l25n144 
         amaxs = ["0.202", "0.335", "0.502", "0.835"]
     if(NCPU == 256): # likely l50n288 or l25n288
-        amaxs = ["0.2003", "0.333633", "0.5003", "0.833633"]    
+        amaxs = ["0.201", "0.334333", "0.501", "0.834333"]    
     FBASE = sys.argv[3]
     if(REDSHIFT == 4.0):
         AMIN, AMAX, odir = "0.200", amaxs[0], FBASE+"z4/"

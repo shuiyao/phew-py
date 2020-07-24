@@ -217,9 +217,16 @@ int load_hdf5(char *snap){
       exit(-1);
     }
     if(!(metals = (float *)malloc(sizeof(float)*h.npart[0]*h.flag_metals))){
-      fprintf(stderr, "Failed to allocate memory for single\n");
+      fprintf(stderr, "Failed to allocate memory for metals\n");
       exit(-1);
     }
+#ifdef PHEW_TRACK_INFO
+    float *trackinfo;
+    if(!(trackinfo = (float *)malloc(sizeof(float)*h.npart[0]*4))){
+      fprintf(stderr, "Failed to allocate memory for trackinfo\n");
+      exit(-1);
+    }
+#endif    
     if(!(intsingle = (int *)malloc(sizeof(int)*h.npart[0]))){
       fprintf(stderr, "Failed to allocate memory for intsingle\n");
       exit(-1);
@@ -391,9 +398,22 @@ int load_hdf5(char *snap){
       P[i].Vinit = single[cnt];
       cnt += 1;
     }
+#endif
+#ifdef PHEW_TRACK_INFO
+    hdf5_dataset = H5Dopen1(hdf5_grp, "PhEWTrackInfo");
+    H5Dread(hdf5_dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, trackinfo);
+    H5Dclose(hdf5_dataset);
+    for(i=ngas, cnt=0; i<h.npart[0]+ngas; i++){
+      for(j=0; j<4; j++)
+	P[i].TrackInfo[j] = trackinfo[cnt*4+j];
+      cnt += 1;
+    }
 #endif    
 
     H5Gclose(hdf5_grp);
+#ifdef PHEW_TRACK_INFO
+    free(trackinfo);
+#endif    
     free(metals);
     free(single);
     free(posvel);
@@ -525,6 +545,7 @@ int load_hdf5(char *snap){
 	for(i=noffset+nstar; i<noffset+h.npart[4]+nstar; i++)
 	  P[i].Mass = h.mass[4];
 
+      /* For Star particles */
       hdf5_dataset = H5Dopen1(hdf5_grp, "StellarFormationTime");
       H5Dread(hdf5_dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, single);
       H5Dclose(hdf5_dataset);

@@ -12,8 +12,10 @@
 #include <string.h>
 
 #define NSPH 50000
-#define BOXSIZE 25000
-#define UNIT_MASS 433697.735404
+/* #define BOXSIZE 25000 */
+/* #define UNIT_MASS 433697.735404 */
+#define BOXSIZE 50000
+#define UNIT_MASS 3469581.88
 #define OMEGABARYON 0.045
 #define HUBBLEPARAM 0.7
 
@@ -26,6 +28,8 @@ char soparname[MAX_LEN_FILENAME];
 
 int snapnum;
 char snapstr[4];
+double lbox;
+double mass_unit;
 
 int main(int argc, char **argv){  
   /* Load HDF5 snapshot */
@@ -36,6 +40,12 @@ int main(int argc, char **argv){
   printf("We have %d parameters here, master.\n", argc);
   strcpy(modelname, argv[1]);
   snapnum = atoi(argv[2]);
+  lbox = atof(argv[3]); // In Mpc
+  mass_unit = UNIT_MASS * pow((lbox / 50.), 3);
+  lbox = lbox / 50. * BOXSIZE;
+
+  fprintf(stdout, "LBox = %e, Unit_M = %e\n",
+	  lbox, mass_unit);
 
   strcat(strcpy(base_name, "/proj/shuiyao/"), modelname);
   strcat(strcpy(skid_base_name, "/proj/shuiyao/"), modelname);
@@ -75,12 +85,14 @@ void get_halo_particles(){
   char outm13[MAX_LEN_FILENAME];
   char printline[200];
   double mvir, rvir;
-  double dx, dr;
+  double dx, dr, MeanWeight, logT;
+
+  short SfFlag;
 
   sprintf(sogtpname, "%s/so_z%s.sogtp", skid_base_name, snapstr);
   read_sogtp(sogtpname);
   for(i=0;i<soheader.nstar;i++){ /* Convert Msub to log(msolar) */
-    if(sohalos[i].mass > 0) sohalos[i].mass = log10(sohalos[i].mass * UNIT_MASS / HUBBLEPARAM) + 10.;
+    if(sohalos[i].mass > 0) sohalos[i].mass = log10(sohalos[i].mass * mass_unit / HUBBLEPARAM) + 10.;
   }
   sprintf(outm11, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gas.mh11", modelname, modelname, snapstr);
   sprintf(outm12, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gas.mh12", modelname, modelname, snapstr);
@@ -88,44 +100,86 @@ void get_halo_particles(){
   foutm11 = fopen(outm11, "w");
   foutm12 = fopen(outm12, "w");
   foutm13 = fopen(outm13, "w");
-  fprintf(foutm11, "#Idx GID HID Mass WMass Mc dr Rvir\n");
-  fprintf(foutm12, "#Idx GID HID Mass WMass Mc dr Rvir\n");
-  fprintf(foutm13, "#Idx GID HID Mass WMass Mc dr Rvir\n");
+  fprintf(foutm11, "#Idx GID HID Mass WMass logT Tmax Z Mc SfFlag dr Rvir\n");
+  fprintf(foutm12, "#Idx GID HID Mass WMass logT Tmax Z Mc SfFlag dr Rvir\n");
+  fprintf(foutm13, "#Idx GID HID Mass WMass logT Tmax Z Mc SfFlag dr Rvir\n");
+#ifdef PHEW_TRACK_INFO
+  FILE *foutm11aux, *foutm12aux, *foutm13aux;
+  char outm11aux[MAX_LEN_FILENAME];
+  char outm12aux[MAX_LEN_FILENAME];
+  char outm13aux[MAX_LEN_FILENAME];
+  sprintf(outm11aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh11", modelname, modelname, snapstr);
+  sprintf(outm12aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh12", modelname, modelname, snapstr);
+  sprintf(outm13aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh13", modelname, modelname, snapstr);    
+  foutm11aux = fopen(outm11aux, "w");
+  foutm12aux = fopen(outm12aux, "w");
+  foutm13aux = fopen(outm13aux, "w");
+  fprintf(foutm11aux, "#f_w t var_t sig var_sig\n");
+  fprintf(foutm12aux, "#f_w t var_t sig var_sig\n");
+  fprintf(foutm13aux, "#f_w t var_t sig var_sig\n");
+#endif  
   for(i=0;i<theader.nsph;i++){
     hid = sohid[i];
     if(hid <= 0) continue;
     if(hosthid[hid] != hid) continue; // Not a central halo
     if(hid > 0){
       mvir = sohalos[hid-1].mass;
-      rvir = sohalos[hid-1].eps / HUBBLEPARAM * BOXSIZE * theader.time;
+      rvir = sohalos[hid-1].eps / HUBBLEPARAM * lbox * theader.time;
       dr = 0.0;
       for(j=0;j<3;j++){
-	dx = (sohalos[hid-1].pos[j] + 0.5) * BOXSIZE - P[i].Pos[j];
-	dx = (dx > BOXSIZE / 2) ? BOXSIZE - dx : dx;
+	dx = (sohalos[hid-1].pos[j] + 0.5) * lbox - P[i].Pos[j];
+	dx = (dx > lbox / 2) ? lbox - dx : dx;
 	dr += dx * dx;
       }
       dr = sqrt(dr) * theader.time / HUBBLEPARAM;
+
+      MeanWeight = (1 + 4 * XHE) / (1 + P[i].Ne + XHE);
+      logT = P[i].Temp * UNIT_V * UNIT_V;
+      logT *= GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight;
+      logT = log10(logT);
+
+      SfFlag = (P[i].Sfr > 0) ? 1 : 0;
+	
 #ifdef PHEW_EXTRA_OUTPUT      
-      sprintf(printline, "%8d %5d %5d %7.5e %7.5e %5.3f %7.2f %7.3f\n",
+      sprintf(printline, "%8d %5d %5d %7.5e %7.5e %7.5f %7.5f %7.5e %5.3f %2d %7.2f %7.3f\n",
 	      i, galid[i], sohid[i],
-	      P[i].Mass, P[i].WindMass,
-	      P[i].Mcloud, dr, rvir
+	      P[i].Mass, P[i].WindMass, logT, P[i].Tmax, P[i].metal[0],
+	      P[i].Mcloud, SfFlag, dr, rvir
 	      );
 #else
-      sprintf(printline, "%8d %5d %5d %7.5e %7.5e %5.3f %7.2f %7.3f\n",
+      sprintf(printline, "%8d %5d %5d %7.5e %7.5e %7.5f %7.5e %5.3f %2d %7.2f %7.3f\n",
 	      i, galid[i], sohid[i],
-	      P[i].Mass, 0.0,
-	      P[i].DelayTime, dr, rvir
+	      P[i].Mass, 0.0, logT, P[i].metal[0],
+	      P[i].DelayTime, SfFlag, dr, rvir
 	      );
 #endif      
       /* sp[i].mass, fabs(aux_sp[i].tmax), aux_sp[i].age); */
       if((11.0 < mvir) && (mvir < 11.5)) fprintf(foutm11, printline);
       else if((11.85 < mvir) && (mvir < 12.15)) fprintf(foutm12, printline);
-      else if((12.85 < mvir) && (mvir < 13.15)) fprintf(foutm13, printline);	
+      else if((12.85 < mvir) && (mvir < 13.15)) fprintf(foutm13, printline);
+
+#ifdef PHEW_TRACK_INFO
+      for(j=0;j<4;j++) P[i].TrackInfo[j] /= P[i].WindMass;
+      sprintf(printline, "%7.5e %7.5e %7.5e %7.5e %7.5e\n",
+	      P[i].WindMass / P[i].Mass,
+	      P[i].TrackInfo[0], sqrt(P[i].TrackInfo[1] - P[i].TrackInfo[0] * P[i].TrackInfo[0]),
+	      P[i].TrackInfo[2], sqrt(P[i].TrackInfo[3] - P[i].TrackInfo[2] * P[i].TrackInfo[2])
+	      );
+      
+      if((11.0 < mvir) && (mvir < 11.5)) fprintf(foutm11aux, printline);
+      else if((11.85 < mvir) && (mvir < 12.15)) fprintf(foutm12aux, printline);
+      else if((12.85 < mvir) && (mvir < 13.15)) fprintf(foutm13aux, printline);
+#endif
+      
     }
   }
   fclose(foutm11);
   fclose(foutm12);
   fclose(foutm13);
+#ifdef PHEW_TRACK_INFO
+  fclose(foutm11aux);
+  fclose(foutm12aux);
+  fclose(foutm13aux);
+#endif  
 }
 

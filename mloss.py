@@ -14,27 +14,42 @@ import matplotlib.patches as mpatches
 import config_mpl
 
 # USEFUL FUNCTIONS:
+# plot_mloss_radius()
 
 # PARENT: /scratch/shuiyao/sci/newwind/mloss/mloss.py
 
-modelname = "l25n144-phew-fa"
+modelname = "l25n288-phew-m4"
+MC_INIT = 2.0e37
+MMIN, MMAX = 11.0, 13.5
+#MMIN, MMAX = 11.0, 12.5
+unit_m = 433697.735404
+#unit_m = 433697.735404 * 8.0
+
 REDSHIFT = 1.0
-subwfolder = "z1"
-MC_INIT = 2.0e38
+if(REDSHIFT == 2.0):
+    subwfolder = "z2"
+if(REDSHIFT == 1.0):
+    subwfolder = "z1"
+
 ascale = 1./(REDSHIFT+1.)
 # Mgasp = 82656250.0 # P6N36
 Mgasp = 9.3e7
 outputbase = "/scratch/shuiyao/scidata/newwind/"
 fwind = outputbase+modelname+"/"+"phewsinfo."+subwfolder
 fmloss = outputbase+modelname+"/"+"mlossinfo."+subwfolder
-#unit_m = 5995.4321936
-#unit_m = 433697.735404 * (12./25.)**3
-unit_m = 433697.735404
 alphavalue = 0.4
 boundsvalue = 0.68
 
 mclast_cut = 0.1
 print "compiled"
+
+# phewp = genfromtxt(fmloss, names=True)
+# modelname = "l50n288-phew-m5"
+# fmloss2 = outputbase+modelname+"/"+"mlossinfo."+subwfolder
+# phewp2 = genfromtxt(fmloss2, names=True)
+# plt.plot(phewp['Mvir'], phewp['Rlast'], "b.", alpha=0.2)
+# plt.plot(phewp2['Mvir'], phewp2['Rlast'], "r.", alpha=0.2)
+# plt.show()
 
 def Mclast():
     fig = plt.figure(1, figsize=(6,9))
@@ -118,12 +133,15 @@ def plot_last_signal():
 
 def plot_mloss_radius():
     fig = plt.figure(1, figsize=(7,9))
-    gs = gridspec.GridSpec(2,1,height_ratios=[1,1])
-    ax1 = plt.subplot(gs[0])
+    gs = gridspec.GridSpec(3,1,height_ratios=[1,1,1])
+    ax0 = plt.subplot(gs[0])
+    Massloss_time(ax=ax0)
+    plt.title(modelname+", Z ~"+str(REDSHIFT)[:3])
+    ax1 = plt.subplot(gs[1])
     Massloss_radius(ax=ax1, rnorm=False)
-    plt.title(modelname+", Z~1.0")
-    ax2 = plt.subplot(gs[1])
+    ax2 = plt.subplot(gs[2])
     Massloss_radius(ax=ax2, rnorm=True)
+    setp(ax0.get_xticklabels(), visible=False)
     setp(ax1.get_xticklabels(), visible=False)
     fig.subplots_adjust(hspace=0, left=0.15)
     plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
@@ -137,7 +155,8 @@ def plot_mloss_velocity():
     plt.title(modelname+", Z~1.0")
     ax2 = plt.subplot(gs[1])
     Massloss_velocity(ax=ax2, rnorm=True)
-    setp(ax1.get_xticklabels(), visible=False)
+    setp(ax0.get_xticklabels(), visible=False)
+    setp(ax1.get_xticklabels(), visible=False)    
     fig.subplots_adjust(hspace=0)
     plt.show()
 
@@ -156,26 +175,56 @@ def Massloss_radius(fin=fmloss, rnorm=False, ax=[]):
     print max(mvir), min(mvir)
 
     NBIN = 10
+    # ax.plot(mvir[::10], rlast[::10], "k.", markersize=6)
     plotmedian(mvir, rlast, ax, nbins=NBIN, clr="yellow", alphavalue=alphavalue)    
-    plotmedian(mvir, r25, ax, nbins=NBIN, clr="orange", alphavalue=alphavalue)
+    plotmedian(mvir, r25, ax, nbins=NBIN, clr="orange", alphavalue=alphavalue, verbose=True)
     plotmedian(mvir, r50, ax, nbins=NBIN, clr="red", alphavalue=alphavalue)
     plotmedian(mvir, r75, ax, nbins=NBIN, clr="magenta", alphavalue=alphavalue)
 
-    ax.set_xlim(11.5,13.0)
+    ax.set_xlim(MMIN, MMAX)
     ax.set_xlabel(r'$Log(M_{vir}/M_\odot)$')
     if(rnorm == True):
         ax.set_ylabel(r'$r/R_{vir}$')
-        ax.set_ylim(0.,2.5)
-        ax.set_yticks([0., 0.5, 1.0, 1.5, 2.0])
+        ax.set_ylim(0.0,1.5)
+        ax.set_yticks([0., 0.5, 1.0])
+        ax.plot([MMIN, MMAX], [0.25, 0.25], "k:")
     else:
         ax.set_ylabel("r [kpc]")
-        ax.set_ylim(0.,600.)
+        ax.set_ylim(0.,450.)
+        ax.set_yticks([0., 200., 400.])        
     legends = []
     legends.append(mpatches.Patch(color="yellow"))
     legends.append(mpatches.Patch(color="orange"))
     legends.append(mpatches.Patch(color="red"))
     legends.append(mpatches.Patch(color="magenta"))
-    plt.legend(legends, [r'$r_{last}$', r'$r_{25}$', r'$r_{50}$', r'$r_{75}$'], loc=2)
+    plt.legend(legends, [r'$r_{last}$', r'$r_{25}$', r'$r_{50}$', r'$r_{75}$'], loc="upper right")
+    # ax.text(0.8, 0.11, "+ V10/Vinit", color="blue", transform=ax.transAxes)
+
+def Massloss_time(fin=fmloss, ax=[]):
+    mclast_cut = 0.1
+    phewp = genfromtxt(fin, names=True)
+    # SELECT ONLY THOSE ANNIHILATED
+    phewp = phewp[phewp['Rlast'] > 0]
+    t75, t50, t25, tlast = phewp['t75'], phewp['t50'], phewp['t25'], phewp['tlast']
+    mvir = phewp['Mvir']
+
+    NBIN = 10
+    plotmedian(mvir, tlast, ax, nbins=NBIN, clr="yellow", alphavalue=alphavalue)    
+    plotmedian(mvir, t25, ax, nbins=NBIN, clr="orange", alphavalue=alphavalue)
+    plotmedian(mvir, t50, ax, nbins=NBIN, clr="red", alphavalue=alphavalue)
+    plotmedian(mvir, t75, ax, nbins=NBIN, clr="magenta", alphavalue=alphavalue)
+
+    ax.set_xlim(MMIN, MMAX)
+    ax.set_xlabel(r'$Log(M_{vir}/M_\odot)$')
+    ax.set_ylabel(r'$Time [Myr]$')
+    ax.set_ylim(0.,1100)
+    ax.set_yticks([0., 250., 500., 750., 1000.])
+    legends = []
+    legends.append(mpatches.Patch(color="yellow"))
+    legends.append(mpatches.Patch(color="orange"))
+    legends.append(mpatches.Patch(color="red"))
+    legends.append(mpatches.Patch(color="magenta"))
+    plt.legend(legends, [r'$t_{last}$', r'$t_{25}$', r'$t_{50}$', r'$t_{75}$'], loc="upper right")
     # ax.text(0.8, 0.11, "+ V10/Vinit", color="blue", transform=ax.transAxes)
 
 def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
@@ -227,11 +276,13 @@ def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
     legends.append(mpatches.Patch(color="magenta"))
     plt.legend(legends, [r'$v_{last}$', r'$v_{75}$', r'$v_{50}$', r'$v_{25}$'], loc=4)
 
-def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4):
+def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4, verbose=False):
     x, y = bin1d.subsample(x0, y0, nonzero=True)
     s = bin1d.bin1d(x, y, nbins=nbins, bounds=boundsvalue)
     xline, yline = s.cen, s.median
     uline, lline = s.ubound, s.lbound
+    if(verbose == True):
+        print xline, yline
     for i in range(len(yline))[1:-1]:
         if(yline[i] == 0):
             yline[i] = 0.5 * (yline[i-1] + yline[i+1])
@@ -239,4 +290,4 @@ def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4):
             lline[i] = 0.5 * (lline[i-1] + lline[i+1])            
     p, = ax.plot(xline, yline, "-", color=clr) # Draw line for all models    
     pf, = plt.fill(xline+xline[::-1], uline+lline[::-1], color=clr, alpha=alphavalue)
-
+    

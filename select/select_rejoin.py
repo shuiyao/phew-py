@@ -20,11 +20,11 @@ else:
     if(REDSHIFT == 4.0):
         AMIN, AMAX, odir = "0.200", amaxs[0], FBASE+"z4/"
     elif(REDSHIFT == 2.0):
-        AMIN, AMAX, odir = "0.333", amaxs[1], FBASE+"z2/"
+        AMIN, AMAX, odir = "0.333333", amaxs[1], FBASE+"z2/"
     elif(REDSHIFT == 1.0):
         AMIN, AMAX, odir = "0.500", amaxs[2], FBASE+"z1/"
     elif(REDSHIFT == 0.2):
-        AMIN, AMAX, odir = "0.833", amaxs[3], FBASE+"z0/"
+        AMIN, AMAX, odir = "0.833333", amaxs[3], FBASE+"z0/"
     else:
         print errormsg
         sys.exit(1)
@@ -37,6 +37,7 @@ else:
 
 widfile = odir+"wid.dat"
 wids = ioformat.rcol(widfile, [0], [0])
+wids = set(wids)
 print len(wids), "Wind IDs read..."
 
 tstart = time.time()
@@ -49,7 +50,8 @@ for icpu in range(NCPU):
     ifile.readline()
     for line in ifile:
         spt = line.split()
-        if(float(spt[0]) > 1): continue # a > 1, never should happen
+        if(spt[0] > "1"): continue # a > 1, never should happen
+        if(spt[0] < AMIN): continue # a > 1, never should happen        
         wid = int(spt[1])
         if wid in wids:
             ofile.write(line)

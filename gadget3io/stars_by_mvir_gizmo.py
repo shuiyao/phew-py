@@ -23,21 +23,29 @@ from astroconst import pc, ac
 
 print "compiled."
 # unit_m = 3469578.81574
-# NCPU = 256
-
-unit_m = 3469578.81574 / 8.0
-NCPU = 128
-
+NCPU = 256
 ATOL = 1.e-4 # Tolerance for ascale (a(SF) < a(Acc) + ATOL)
 #flag = 1 # PhEW or not
 # The criteria for discarding spurious accretion:
 # If dM* < DMTOL: It's very likely spurious
 #   - However, if in this case dt > 1 Gyr, we still take them into account
 # If dM* > DMTOL: We will base solely on dt < 200 Myr to discard them
-DTTOL = 1000. * ac.myr
+# DTTOL = 1000. * ac.myr
+DTTOL = 1.e9
 DMTOL = 0.2
-NEGATIVE_TMAX_FOR_WINDS = False
-# Note that in some later version of the Gadget code (e.g., p50n288dsw), I make the Tmax of particles negative if their last accretion is from winds. But in previous versions it's not there.
+
+import sys
+modelname = sys.argv[1]
+snapstr = sys.argv[2]
+lbox = sys.argv[3]
+mstr = "."+sys.argv[4]
+flag = sys.argv[5]
+
+if(lbox == "25"):
+    unit_m = 3469578.81574 / 8.
+if(lbox == "50"):
+    unit_m = 3469578.81574
+print "unit_m =", unit_m
 
 class skidgal():
     def __init__(self, mstar, mvir):
@@ -59,15 +67,16 @@ def read_gal_data(skidbase, snapstr):
         gals.append(skidgal(mstar[i], mvir[i]))
     return gals
 
-def read_stars_data(fname):
+def read_stars_data(fname, flag_phew=False):
     stars = genfromtxt(fname, dtype='i8,i8,i8,i8,f8,f8,f8', names=True)
     # Idx, ID, GID, HID, Mass, Tmax, Age
     print stars.dtype
-    stars['Mass'] = stars['Mass'] * unit_m * 1.e10 / 0.7
+    stars['Mass'] = stars['Mass'] * unit_m * 1.e10 / 0.7 * 2.0e33
     # 'Age' used to be the real age. Now is the a_form
-    # for i in range(len(stars['Age'])):
-    #     if(stars['Age'][i] > 0):
-    #         stars['Age'][i] = acosmic(stars['Age'][i])
+    if(flag_phew == False):
+        for i in range(len(stars['Age'])):
+            if(stars['Age'][i] > 0):
+                stars['Age'][i] = acosmic(stars['Age'][i])
     return stars
 
 def read_galacc_data(fname): # The compiled file.
@@ -112,7 +121,7 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
     for fi in range(NCPU):
         fsfrinfo = sfrinfobase + "sfrinfo." + str(fi)
         print "Reading: ", fsfrinfo
-        acc = genfromtxt(fsfrinfo, dtype=fformat, usecols=cols)
+        acc = genfromtxt(fsfrinfo, dtype=fformat, usecols=cols) # update: 20200100
         acc = sort(acc, order='ID')
         istars, nextPID = 0, stars['ID'][0]
         for iacc in range(len(acc)): # Loop: SFRINFO
@@ -143,17 +152,10 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
     fout = open(outname, "w")
     fout.write("#a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID\n") # update: 20200110
     for istars in range(len(stars)):
-        if(NEGATIVE_TMAX_FOR_WINDS):
-            if(alast[istars] < 0): stars['Tmax'][istars] *= -1
         gid, hid = stars['GID'][istars], stars['HID'][istars]
         if(gid != 0): mstar = gals[gid-1].mstar
         else: mstar = -inf
-        if(hid != 0):
-            if(abs(hid)-1 >= len(gals)):
-                print hid, len(gals)
-                continue
-            else:
-                mvir = gals[abs(hid)-1].mvir
+        if(hid != 0): mvir = gals[abs(hid)-1].mvir
         else: mvir = -inf
         if(gid != hid): # non-central
             mvir *= -1
@@ -166,17 +168,11 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
         fout.write(line)
     fout.close()
 
-import sys
-modelname = sys.argv[1]
-snapstr = sys.argv[2]
-mstr = "."+sys.argv[3]
-flag = sys.argv[4]
-if(modelname == "p50n288dsw"): NEGATIVE_TMAX_FOR_WINDS = True
 galbase = "/scratch/shuiyao/scidata/gadget3io/"+modelname+"/"
 fname = galbase+modelname+"_"+snapstr+".stars"+mstr
 outname = galbase+modelname+"_"+snapstr+".starinfo"+mstr
 sfrinfobase = "/proj/shuiyao/"+modelname+"/SFRINFO/"
 skidbase = "/proj/shuiyao/"+modelname+"/"
-stars = read_stars_data(fname)
+stars = read_stars_data(fname, flag)
 gals = read_gal_data(skidbase, snapstr)
 load_sfrinfo(stars, gals, sfrinfobase, outname, flag)

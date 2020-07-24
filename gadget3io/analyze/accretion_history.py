@@ -32,9 +32,10 @@ FIGNAME = "sfhistory.pdf"
 FIGNAME = "/scratch/shuiyao/figures/tmp.pdf"
 CENTRAL_ONLY = True
 color_coldw = "cyan"
-color_hotw = "pink"
+color_hotw = "magenta"
 color_wind = "green"
 color_wmix = "cyan"
+color_allw = "orange"
 HUBBLEPARAM = 0.7
 OMEGAB = 0.045
 OMEGAM = 0.3
@@ -84,11 +85,12 @@ class binned_by_aform():
             if(SEPARATE_COLD_HOT_WINDS):
                 ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
+                ax.plot(self.mid, log10((self.whot+self.wcold)/self.totalmass), linestyle=lstyle, color=color_allw)                
             ax.plot(self.mid, log10(self.wind/self.totalmass), linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, log10(self.wmix/self.totalmass), linestyle=lstyle, color=color_wmix)
                 ax.plot(self.mid, log10((self.total-self.wmix)/self.totalmass), linestyle=lstyle, color="lightgrey")
-            ax.plot(self.mid, log10((self.total-self.other)/self.totalmass), linestyle=lstyle, color="orange")
+            ax.plot(self.mid, log10((self.total-self.other)/self.totalmass), linestyle=lstyle, color="grey")
             ax.plot(self.mid, log10(self.total/self.totalmass), linestyle=lstyle, color="black")
         elif(method == "differential"):
             ax.plot(self.mid, log10(self.cold/self.totalmass/self.dz), linestyle=lstyle, color="blue")
@@ -96,21 +98,23 @@ class binned_by_aform():
             if(SEPARATE_COLD_HOT_WINDS):            
                 ax.plot(self.mid, log10(self.wcold/self.totalmass/self.dz), linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, log10(self.whot/self.totalmass/self.dz), linestyle=lstyle, color=color_hotw)
+                ax.plot(self.mid, log10((self.whot+self.wcold)/self.totalmass/self.dz), linestyle=lstyle, color=color_allw)                
             ax.plot(self.mid, log10(self.wind/self.totalmass/self.dz), linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, log10(self.wmix/self.totalmass/self.dz), linestyle=lstyle, color=color_wmix)
             ax.plot(self.mid, log10(self.total/self.totalmass/self.dz), linestyle=lstyle, color="black")
-            ax.plot(self.mid, log10(1.0-self.other/self.totalmass/self.dz), linestyle=lstyle, color="orange")
+            ax.plot(self.mid, log10(1.0-self.other/self.totalmass/self.dz), linestyle=lstyle, color="grey")
         elif(method == "cumulative"):
             ax.plot(self.mid, self.cold/self.total, linestyle=lstyle, color="blue")
             ax.plot(self.mid, self.hot/self.total, linestyle=lstyle, color="red")
             if(SEPARATE_COLD_HOT_WINDS):            
                 ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
                 ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
+                ax.plot(self.mid, (self.whot+self.wcold)/self.total, linestyle=lstyle, color=color_allw)                
             ax.plot(self.mid, self.wind/self.total, linestyle=lstyle, color=color_wind)
             if(SHOW_WINDS_MIXED):
                 ax.plot(self.mid, self.wmix/self.total, linestyle=lstyle, color=color_wmix)
-            ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="orange")
+            ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="grey")
             ax.plot(self.mid, self.total/self.total, linestyle=lstyle, color="black")
             ax.plot(self.mid, self.total/self.total[-1], linestyle=lstyle, color="grey") # The stellar mass growth of all stars
 
@@ -167,9 +171,9 @@ def build_abins_phew(stars, cumulative=False):
                 abins.wcold[bidx] += s['WindMass']
         elif(s['a_last'] < 0): # wind
             # Caution ~ Now Tmax are all > 0
-            abins.wind[bidx] += s['Mass']
-            # if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
-            # else: abins.wcold[bidx] += s['Mass']
+            # abins.wind[bidx] += s['Mass']
+            if(s['Tmax'] > 5.5): abins.whot[bidx] += s['Mass']
+            else: abins.wcold[bidx] += s['Mass']
         else:
             abins.other[bidx] += s['Mass']
     if(cumulative == True):
@@ -242,27 +246,34 @@ def figure_sfhistory():
     # modelnames = ["l25n144-phew-m5kh100fs10","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
     # labels = ["mc5", "mc4kh50", "mc4kh100"]
 
-    modelnames = ["l25n144-phewoff","l25n144-phew-m5kh30fs10", "l25n144-phew-mach1"] # mi    
-    labels = ["PhEWOff", "m5kh30fs10", "m5kh30fs10"]
+    # modelnames = ["l25n144-phewoff","l25n144-phew-m5kh30fs10", "l25n144-phew-mach1"] # mi    
+    # labels = ["PhEWOff", "m5kh30fs10", "m5kh30fs10"]
 
     # modelnames = ["l25n144-phew-m4kh100fs100","l25n144-phew-m4kh50fs10", "l25n144-phew-m4kh100fs10"] # mi    
     # labels = ["mc4fs100", "mc4kh50", "mc4fs10"]
 
     # modelnames = ["p50n288fiducial","l25n144-gadget3", "l25n144-phewoff"] # mi
     # labels = ["p50n288", "Gadget3", "GIZMO"]
+
+    modelnames = ["l25n288-phew-m5","l25n144-phew-m5"] # mi
+    labels = ["PhEW,25/288", "PhEW,25/144"]
+
+    # modelnames = ["l25n288-phewoff-fw","l25n144-phewoff"] # mi
+    # labels = ["PhEWOff,25/288", "PhEWOff,25/144"]
+    
     # titlestr = [r'$11.0 < \log(\frac{M_{vir}}{M_\odot}) < 11.5$',\
     #             r'$11.85 < \log(\frac{M_{vir}}{M_\odot}) < 12.15$',\
     #             r'$12.85 < \log(\frac{M_{vir}}{M_\odot}) < 13.15$']
     titlestr = ["low-mass",\
                 "intermediate",\
                 "massive"]
-    lstyles = [":", "--", "-"]
+    lstyles = ["-", "--", ":"]
     moster18 = [8.92, 10.4, 10.96] # Moster 18 M* for the three bins
     moster18 = (array(moster18) - array([11.25, 12.0, 13.0])) - log10(OMEGAB/OMEGAM)
     from matplotlib.lines import Line2D
     lgds = []
     for fi in range(3): # Mass bins
-        for mi in [0, 2]: # Models
+        for mi in [0, 1]: # Models
             sfrinfoname, soname = find_fnames(modelnames[mi], mstrs[fi])
             print sfrinfoname, soname
             if(mi == -1):
@@ -298,7 +309,7 @@ def figure_sfhistory():
     if(SEPARATE_COLD_HOT_WINDS):
         lgds.append(Line2D([0], [0], color=color_coldw, linestyle="-", label="cold wind"))
         lgds.append(Line2D([0], [0], color=color_hotw, linestyle="-", label="hot wind"))
-    lgds.append(Line2D([0], [0], color="green", linestyle="-", label="wind"))
+    # lgds.append(Line2D([0], [0], color="green", linestyle="-", label="wind"))
     if(SHOW_WINDS_MIXED):
         lgds.append(Line2D([0], [0], color="cyan", linestyle="-", label="wmix"))
     lgds.append(Line2D([0], [0], color="lightgrey", linestyle="-", label="M(z)/M(z=0)"))

@@ -1,7 +1,8 @@
 #adopted from tipsy-tools
 CC = gcc
 CFLAGS = -g
-TOOLS = allstars get_halo_particles
+TOOLS = allstars
+#TOOLS = allstars get_halo_particles
 #OPT += -DMARK64
 OBJS = gadget3io.o
 INCL = gadget3io.h tipsydefs.h /usr/include/stdio.h

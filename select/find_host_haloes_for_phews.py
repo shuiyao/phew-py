@@ -114,7 +114,10 @@ def write_file():
     fout = open(outname, "w")
     fout.write("#idx PhEWKey HID LogMvir LogMsub Rvir\n")
     for pid in pid_to_key:
-        idx = pid_to_idx[pid]
+        if(pid in pid_to_idx):
+            idx = pid_to_idx[pid]
+        else:
+            continue
         if(abs(hid[idx]) < len(haloes)): # Ignore last line
             halo = haloes[abs(hid[idx])-1]
             line = "%8d %10d %5d %6.3f %6.3f %6.1f\n" % (
