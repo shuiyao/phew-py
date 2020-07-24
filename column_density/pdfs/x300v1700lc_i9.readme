@@ -1,0 +1,28 @@
+Column Density PDF at t50.
+
+Mc = 6.7e4 Msolar * 50%
+Rc ~ 20 pc
+
+x-proj (Perpendicular):
+  - covering area = 1.75 * pi * (100 pc) ^ 2
+                  = 5.5e4 [pc^2] = 5.236e41 [cm^2]
+  - equivalent r_cov = sqrt(1.75) * (100/20) = 6.61 (*)
+  - equivalent l_c = 43.7 r_c ~ 873 pc, reasonable
+y-proj (parallel)
+  - covering area = 0.225 * pi * (100 pc) ^ 2
+                  = 7.1e3 [pc^2] = 6.632e40 [cm^2]
+  - equivalent r_cov = sqrt(0.225) * (100/20) = 2.37 (*)
+
+To use it in specexbin:
+1. Calculate the angle, phi, between PhEWP.vel and LoS
+2. Let correction factor be y = max(sin(phi), (2.37/6.61)^2)
+3. Use the x-proj, equivalent r_cov = 6.61 * sqrt(y) * r_c
+  - e.g., perpendicular: phi = 90 deg., r_cov = 1
+4. See how many cloudlets are found by likelihood
+5. For each cloudlet, generate random from (0, 1).
+  - For each ion, it gives a log(N).
+  - Use N / y (larger N for more parallel view)
+6. Correct for r_c and M_c:
+  - Nfinal = (N / y) * (Mc / [3.35e4 Msolar]) / (r_c / [20 pc])^2
+             / (UV(ion,z)/UV(ion,0)) * (Z/Zsolar)
+
