@@ -25,11 +25,14 @@ ATOL = 1.e-4 # Tolerance for ascale (a(SF) < a(Acc) + ATOL)
 # DTTOL = 1000. * ac.myr
 DTTOL = 1.e9 # yr
 
+STELLAR_AGE_IN_ASCALE = True # Format of the P(Star).Age
+SFRINFO_FORMATS = ["Gadget3", "GIZMO-PhEW", "GIZMO-PhEW-Extra"]
+
 import sys
 modelname = sys.argv[1]
 snapstr = sys.argv[2]
 lbox = sys.argv[3]
-flag = sys.argv[4]
+flag = (int)(sys.argv[4])
 if(len(sys.argv) > 5): mstr = "."+sys.argv[5]
 else: mstr = ""
 
@@ -38,7 +41,6 @@ if(lbox == "25"):
 if(lbox == "50"):
     unit_m = 3469578.81574
 print "unit_m =", unit_m
-    
 
 class skidgal():
     def __init__(self, mstar, mvir):
@@ -60,13 +62,28 @@ def read_gal_data(skidbase, snapstr):
         gals.append(skidgal(mstar[i], mvir[i]))
     return gals
 
-def read_stars_data(fname, flag_phew=False):
+def format_of_sfrinfo_file(flag_format):
+    if(flag_format == "GIZMO-PhEW-Extra"): # update: 20200724
+        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mass', 'wmass', 'Z', 't1', 't3'),
+                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8')}
+        cols = (0,2, 3,4,5,6,7, 8,10)
+    if(flag_format == "GIZMO-PhEW"): # update: 20200110
+        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mass', 'wmass', 'Z', 't1', 't3'),
+                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8')}
+        cols = (0,1,2,3, 6,7,8,9,11)
+    if(flag_format == "Gadget3"):
+        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mstar', 'mass', 'Z'),
+                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8')}
+        cols = (0,1,2,3,5,6,7)
+    return fformat, cols
+
+def read_stars_data(fname, stellar_age_in_ascale = True):
     stars = genfromtxt(fname, dtype='i8,i8,i8,i8,f8,f8,f8', names=True)
     # Idx, ID, GID, HID, Mass, Tmax, Age
     print stars.dtype
     stars['Mass'] = stars['Mass'] * unit_m * 1.e10 / 0.7 * 2.0e33
     # 'Age' used to be the real age. Now is the a_form
-    if(flag_phew == False):
+    if(stellar_age_in_ascale == False): # Force Convert the 'Age' field to ascale
         for i in range(len(stars['Age'])):
             if(stars['Age'][i] > 0):
                 stars['Age'][i] = acosmic(stars['Age'][i])
@@ -88,8 +105,8 @@ def discard_spurious_accretion(atime, alast):
     if(tcosmic(atime) - tcosmic(alast) < DTTOL): return 1
     return 0
 
-def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
-    # flag_phew: is the simulation a PhEW simulation?    
+def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_format):
+    # flag_format: The format of the SFRINFO file
     # Let's be concerned ONLY with STARS.
     # Idea: Loop over all sfrinfo.* files.
     # For each sfrinfo.* file, guided loop over particle ID.
@@ -99,18 +116,16 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
     # Each time sfrinfo.* finds a likely match for a PID, find
     #   - tmax(sfrinfo), tmax(fstars)
     # If tmax match, then YES!
-    if(flag_phew): # update: 20200110
-        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mstar', 'mass', 'wmass', 'Z'),
-                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8')}
-        cols = (0,1,2,3,5,6,7,8)
-    else:
-        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mstar', 'mass', 'Z'),
-                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8')}
-        cols = (0,1,2,3,5,6,7)
-    # fsfrinfo = sfrinfobase + "sfrinfo.56"
+
+    fformat, cols = format_of_sfrinfo_file(flag_format)
+    print "flag_format = ", flag_format
+    print fformat
+    print cols
+
     stars = sort(stars, order='ID')
     nparts = len(stars)
-    aacc, alast, tmaxdiff, ms, pmass, wmass, metals = [-1]*nparts, [-1]*nparts, [10.]*nparts, [-1]*nparts, [0.0]*nparts, [0.0]*nparts, [-1.0]*nparts # update: 20200110 
+    aacc, alast, tmaxdiff, pmass, wmass, metals = [-1]*nparts, [-1]*nparts, [10.]*nparts, [0.0]*nparts, [0.0]*nparts, [-1.0]*nparts # update: 20200110
+    if(flag_format == "GIZMO-PhEW-Extra"): tavg, sigavg = [-1]*nparts, [0.0]*nparts
     for fi in range(NCPU):
         fsfrinfo = sfrinfobase + "sfrinfo." + str(fi)
         print "Reading: ", fsfrinfo
@@ -128,17 +143,25 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
                     # Do the spurious accretion check                    
                     # if(discard_spurious_accretion(acc['atime'][iacc], acc['alast'][iacc])): continue
                     # if(tcosmic(acc['atime'][iacc]) - tcosmic(acc['alast'][iacc]) >= DTTOL):
-                    if(acc['atime'][iacc] - acc['alast'][iacc] >= 0.08):       
-                        if(match_check(acc['tmax'][iacc], stars['Tmax'][istars], tol=tmaxdiff[istars])): # tmaxs match
-                            if(acc['atime'][iacc] < stars['Age'][istars]+ATOL): # SF after accretion
-                                aacc[istars] = acc['atime'][iacc]
-                                alast[istars] = acc['alast'][iacc]
-                                ms[istars] = acc['mstar'][iacc]
-                                pmass[istars] = acc['mass'][iacc] # add: 20200110
-                                # pmass[istars] = stars['Mass'][istars]
-                                metals[istars] = acc['Z'][iacc]
-                                tmaxdiff[istars] = abs(acc['tmax'][iacc]-stars['Tmax'][istars])
-                                if(flag_phew): wmass[istars] = acc['wmass'][iacc] # add: 20200110                                
+                    if(acc['atime'][iacc] - acc['alast'][iacc] >= 0.008):
+                        # if(match_check(acc['tmax'][iacc], stars['Tmax'][istars], tol=tmaxdiff[istars])): # tmaxs match
+                        #     if(acc['atime'][iacc] < stars['Age'][istars]+ATOL): # SF after accretion
+                        aacc[istars] = acc['atime'][iacc]
+                        alast[istars] = acc['alast'][iacc]
+                        pmass[istars] = acc['mass'][iacc] # add: 20200110
+                        # pmass[istars] = stars['Mass'][istars]
+                        metals[istars] = acc['Z'][iacc]
+                        tmaxdiff[istars] = abs(acc['tmax'][iacc]-stars['Tmax'][istars])
+                        if(flag_format != "Gadget3"): wmass[istars] = acc['wmass'][iacc] # add: 20200110
+                        if(flag_format == "GIZMO-PhEW-Extra"):
+                            tavg[istars] = acc['t1'][iacc] / acc['wmass'][iacc] # add: 20200724
+                            if(tavg[istars] > 1.34e10):
+                                tavg[istars] = 1.0
+                            elif(tavg[istars] < 1.e6):
+                                tavg[istars] = 0.0
+                            else:
+                                tavg[istars] = acosmic(tavg[istars])
+                            sigavg[istars] = acc['t3'][iacc] / acc['wmass'][iacc] # add: 20200724
                         # End (acc['ID'][iacc] == nextPID)
                 istars += 1
                 if(istars > nparts - 1): break # No particle to match!            
@@ -147,7 +170,10 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
     # Now we got aacc, alast, tmaxdiff.
     # Now Write:
     fout = open(outname, "w")
-    fout.write("#a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID\n") # update: 20200110    
+    if(flag_format == "GIZMO-PhEW-Extra"):
+        fout.write("#a_form a_acc a_last Mass WindMass WindAge WindSig Tmax Z GID HID\n") # update: 20200724
+    else:
+        fout.write("#a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID\n") # update: 20200110        
     for istars in range(len(stars)):
         gid, hid = stars['GID'][istars], stars['HID'][istars]
         if(gid != 0): mstar = gals[gid-1].mstar
@@ -161,12 +187,19 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_phew=False):
         else: mvir = -inf
         if(gid != hid): # non-central
             mvir *= -1
-        # update: 20200110            
-        line = "%7.5f %7.5f % 7.5f %7.5e %7.5e %5.2f % 5.3f %7.5e %5d %5d\n" % \
-        (stars['Age'][istars], aacc[istars], alast[istars], \
-         pmass[istars], wmass[istars], ms[istars], \
-         stars['Tmax'][istars], metals[istars], \
-         gid, hid)
+        # update: 20200110
+        if(flag_format == "GIZMO-PhEW-Extra"):        
+            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e %7.5f %5.1f % 5.3f %7.5e %5d %5d\n" % \
+            (stars['Age'][istars], aacc[istars], alast[istars], \
+             pmass[istars], wmass[istars], tavg[istars], sigavg[istars], \
+             stars['Tmax'][istars], metals[istars], \
+             gid, hid)
+        else:
+            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e % 5.3f %7.5e %5d %5d\n" % \
+            (stars['Age'][istars], aacc[istars], alast[istars], \
+             pmass[istars], wmass[istars], \
+             stars['Tmax'][istars], metals[istars], \
+             gid, hid)
         fout.write(line)
     fout.close()
 
@@ -175,6 +208,7 @@ fname = galbase+modelname+"_"+snapstr+".stars"+mstr
 outname = galbase+modelname+"_"+snapstr+".starinfo"+mstr
 sfrinfobase = "/proj/shuiyao/"+modelname+"/SFRINFO/"
 skidbase = "/proj/shuiyao/"+modelname+"/"
-stars = read_stars_data(fname, flag)
+stars = read_stars_data(fname, STELLAR_AGE_IN_ASCALE)
 gals = read_gal_data(skidbase, snapstr)
-load_sfrinfo(stars, gals, sfrinfobase, outname, flag)
+load_sfrinfo(stars, gals, sfrinfobase, outname, SFRINFO_FORMATS[flag])
+

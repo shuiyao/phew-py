@@ -20,7 +20,7 @@ from astroconst import pc, ac
 
 print "compiled."
 def find_fnames(modelname, mstr):
-    snapstr = "108"
+    snapstr = "098"
     sfrinfoname = "/scratch/shuiyao/scidata/gadget3io/"+modelname+"/"+modelname+"_"+snapstr+".starinfo."+mstr
     soname = "/proj/shuiyao/"+modelname+"/"+"so_z"+snapstr+".sovcirc"    
     return sfrinfoname, soname
@@ -255,8 +255,11 @@ def figure_sfhistory():
     # modelnames = ["p50n288fiducial","l25n144-gadget3", "l25n144-phewoff"] # mi
     # labels = ["p50n288", "Gadget3", "GIZMO"]
 
-    modelnames = ["l25n288-phew-m5","l25n144-phew-m5"] # mi
-    labels = ["PhEW,25/288", "PhEW,25/144"]
+    # modelnames = ["l25n288-phew-m5","l25n144-phew-m5"] # mi
+    # labels = ["PhEW,25/288", "PhEW,25/144"]
+
+    modelnames = ["l25n288-phew-m5","l25n144-phew-m5-spl"] # mi
+    labels = ["PhEW,25/288", "PhEW,25/288, Split"]
 
     # modelnames = ["l25n288-phewoff-fw","l25n144-phewoff"] # mi
     # labels = ["PhEWOff,25/288", "PhEWOff,25/144"]

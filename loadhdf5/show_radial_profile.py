@@ -12,8 +12,8 @@ ZSOLAR = log10(0.0122)
 
 #MODE = "Metal"
 MODE = "Mass"
-SUB_MODE = "Tmax"
-#SUB_MODE = "logT"
+#SUB_MODE = "Tmax"
+SUB_MODE = "logT"
 RENEW = False
 
 
@@ -35,13 +35,14 @@ def find_radial_bin(r):
 # models = ["l50n288-phewoff", "l25n288-phewoff-fw"]
 # lgds = ["l50n288-phewoff", "l25n288-phewoff-fw"]
 # ---- 25/144 Vs. 25/288 (PhEW)
-models = ["l25n144-phew-m5", "l25n288-phew-m5"]
-lgds = ["PhEW,25/144", "PhEW,25/288"]
-# models = ["l25n144-phew-m5", "l25n144-phew-m5-spl"]
-# lgds = ["PhEW,25/144", "PhEW,25/144,Split"]
+# models = ["l25n144-phew-m5", "l25n288-phew-m5"]
+# lgds = ["PhEW,25/144", "PhEW,25/288"]
+models = ["l25n288-phew-m5", "l25n288-phew-m5-spl"]
+lgds = ["PhEW,25/288", "PhEW,25/288,Split"]
 lstyles = ["--", "-"]
-REDSHIFT = 1.0
+REDSHIFT = 0.25
 if(REDSHIFT == 0.0): zstr = "108"
+if(REDSHIFT == 0.25): zstr = "098"
 if(REDSHIFT == 1.0): zstr = "078"
 if(REDSHIFT == 2.0): zstr = "058"
 if(REDSHIFT == 4.0): zstr = "033"

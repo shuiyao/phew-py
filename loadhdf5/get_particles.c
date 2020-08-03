@@ -37,12 +37,15 @@ int main(int argc, char **argv){
   load_hdf5(base_name);
 
   cosmounits();
-
+v
   if(flag_write_sph == 1)
     write_sph_particles(base_name);
 
   if(flag_write_phew == 1)
     write_phew_particles(base_name);
+
+  /* if(flag_write_halo == 1) */
+  /*   write_halo_particles(base_name, haloid);     */
 
   return 1;
 }
@@ -76,6 +79,12 @@ int write_sph_particles(char *snap){
   fclose(outputfile);
   fprintf(stdout, "Total number of SPH particles: %d\n", icount);
   return 1;
+}
+
+int is_particle_in_halo(int i){
+  int k;
+  for(k = 0; k < 3; k++)
+    if(P[i].Pos[k] < HPos)
 }
 
 int write_phew_particles(char *snap){
@@ -121,6 +130,12 @@ int parse_input(int argc, char **argv, char *base_name)
       {flag_write_sph=1; ++i;}
     else if (!strcmp(argv[i], "-phew"))
       {flag_write_phew=1; ++i;}
+    else if (!strcmp(argv[i], "-halo")){
+      flag_write_halo=1;
+      ++i;
+      haloid = atoi(argv[i]);
+      ++i;
+    }
     else{
       printf("%s\n", argv[i]);
       strcpy(base_name, argv[i]); ++i;

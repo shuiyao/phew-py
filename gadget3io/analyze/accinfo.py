@@ -23,6 +23,7 @@ print "compiled."
 DRAW_FRAME = True
 TMAX_CUT = 5.5
 SHOW_ALLWINDS = True
+RENEW = True
 
 # modelnames = ["p50n288sw", "l50n288-phewoff", "p50n288beta2"] # mi
 # lgds = ["RefSlow", "Ref", "Ref$\sigma$3"]
@@ -37,19 +38,23 @@ lstyles = ["--", "-", ":"]
 # lgds = ["GIZMO", "GIZMO-Hres"]
 # modelnames = ['l50n288-phew-m5', 'l25n288-phew-m5']
 # lgds = ["PhEW-L50-Mc5", "PhEW-L25-Mc5"]
-modelnames = ['l25n144-phew-m5', 'l25n288-phew-m5']
-lgds = ["PhEW,25/144", "PhEW,25/288"]
+# modelnames = ['l25n144-phew-m5', 'l25n288-phew-m5']
+# lgds = ["PhEW,25/144", "PhEW,25/288"]
+modelnames = ['l25n288-phew-m5', 'l25n288-phew-m5-spl']
+lgds = ["PhEW,25/288", "PhEW,25/288,Split"]
 # modelnames = ['l25n144-phew-rcloud', 'l50n288-phew-m5']
 # lgds = ["PhEW,25/144", "PhEW,50/288"]
 # modelnames = ['l25n144-phewoff', 'l25n288-phewoff-fw']
 # lgds = ["PhEW-L25N144-Mc5", "PhEW-L50-Mc5"]
-REDSHIFT = 1.0
+REDSHIFT = 0.25
 if(REDSHIFT == 0.0):
     zstr = "108"
 if(REDSHIFT == 2.0):
     zstr = "058"
 if(REDSHIFT == 1.0):
-    zstr = "078"    
+    zstr = "078"
+if(REDSHIFT == 0.25):
+    zstr = "098"    
 
 def find_fnames(modelname):
     snapstr = zstr
@@ -130,8 +135,11 @@ class binned_by_virial_mass():
             ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="lightgrey")
             ax.plot(self.mid, self.total/self.total, linestyle=lstyle, color="black")
 
-def read_starinfo(fname):
-    stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)    
+def read_starinfo(fname, fformat=1):
+    if(fformat == 1):
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
+    else:
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
     # a_form a_acc a_last Mass Tmax Mstar Mvir
     # if Mvir < 0, it's a satellite galaxy
     return stars
@@ -163,8 +171,8 @@ def build_mvir_bins(stars, soname):
     mvbins.totalmass *= (OMEGAB / OMEGAM) * 2.0e33
     return mvbins
 
-def load_central_stars(fname):
-    stars = read_starinfo(fname)
+def load_central_stars(fname, fformat):
+    stars = read_starinfo(fname, fformat)
     nstars = len(stars)
     stars = stars[stars['GID'] == stars['HID']] # Only central galaxies    
     print "Stars from central galaxies: %d/%d (%4.1f%%)" % \
@@ -232,6 +240,8 @@ def draw_frame():
         snapnum, zstr_behroozi = "108", "0.10"
     if(REDSHIFT == 1.0):
         snapnum, zstr_behroozi = "078", "1.00"
+    if(REDSHIFT == 0.25):
+        snapnum, zstr_behroozi = "098", "0.10"
     mh, ms, err1, err2 = ioformat.rcol(FBEHROOZI+"c_smmr_z"+zstr_behroozi+"_red_all_smf_m1p1s1_bolshoi_fullcosmos_ms.dat", [0,1,2,3], linestart=1)
     ms = array(ms) - log10(0.156)
     axs[0].plot(mh, ms, "o", color="green", markersize=6)
@@ -247,11 +257,12 @@ def draw_frame():
     plt.savefig(FIGNAME)
     plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
     plt.show()
-
+    
+fformats = [0, 1]
 for mi in range(2):
     sfrinfoname, soname, foutname = find_fnames(modelnames[mi])
-    if(not os.path.exists(foutname)):
-        stars = load_central_stars(sfrinfoname)
+    if(not os.path.exists(foutname) and RENEW == False):
+        stars = load_central_stars(sfrinfoname, fformat=fformats[mi])
         mvbins = build_mvir_bins(stars, soname) # totalmass estimated here
         mvbins.write(foutname)
     # OBSOLETE: mvbins.totalmass = find_total_mass(stars, soname) 

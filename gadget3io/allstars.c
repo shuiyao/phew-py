@@ -92,7 +92,7 @@ void main(int argc, char **argv)
     fprintf(fout, "#Idx ID GID HID Mass Tmax Age\n");
     for(i=0;i<theader.nstar;i++){
       pidx = i + ioffset_star;
-      fprintf(fout, "%8d %8d %5d %5d %7.5e %5.3f %7.5f\n",
+      fprintf(fout, "%8d %10d %5d %5d %7.5e %5.3f %7.5f\n",
 	      pidx, pids[pidx], galid[pidx], sohid[pidx],
 	      sp[i].mass, aux_sp[i].tmax, aux_sp[i].age);	      
 	      /* sp[i].mass, fabs(aux_sp[i].tmax), aux_sp[i].age); */

@@ -45,13 +45,14 @@ fig, ax = plt.subplots(1,1, figsize=(8,7))
 
 # models = ['l25n144-phew-rcloud', 'l25n288-phew-m5']
 # lgds = ['PhEW,25/144', 'PhEW,25/288']
-models = ['l25n144-phew-rcloud', 'l25n144-phew-m5-spl', 'l25n288-phew-m5']
-lgds = ['PhEW,25/144', 'PhEW,25/144,Split', 'PhEW,25/288']
-ls = ["--", "-", ":"]
+models = ['l25n144-phew-rcloud', 'l25n144-phew-m5-spl', 'l25n288-phew-m5', 'l25n288-phew-m5-spl']
+lgds = ['25/144', '25/144,Split', '25/288', "25/288,Split"]
+ls = ["--", "-", "--", "-"]
+clrs = ["blue", "blue", "red", "red"]
 
 for mi, model in enumerate(models):
     folder = "/scratch/shuiyao/scidata/gadget3io/"+model+"/"
-    fname = folder + model + "_108.gas.mh11"
+    fname = folder + model + "_098.gas.mh11"
 
     tab = genfromtxt(fname, names=True)
     primo = tab[tab['Mc'] == 0]
@@ -61,13 +62,13 @@ for mi, model in enumerate(models):
     else:
         mratio = primo['Mass'] / Mgas_lres
 
-    if(mi == 2): mratio *= 8.0
+    if(mi == 2 or mi == 3): mratio *= 8.0
     # da = primo['a_form'] - primo['a_acc']
     # print sum(primo['WMass']) / sum(primo['Mass'])
 
     hist, edges = histogram(mratio, bins=100)
     cen, cumfrac = reverse_cumsum(hist, edges)
-    ax.plot(cen, cumfrac, "b", linestyle=ls[mi])
+    ax.plot(cen, cumfrac, clrs[mi], linestyle=ls[mi])
 
     # folder = "/scratch/shuiyao/scidata/gadget3io/"+model+"/"
     # fname = folder + model + "_108.starinfo.mh11"
@@ -87,10 +88,11 @@ for mi, model in enumerate(models):
 
 lgd = legend.legend(ax)
 lgd.loc = "upper right"
-lgd.addLine((lgds[0], "black", "--", 1))
-lgd.addLine((lgds[1], "black", "-", 1))
-lgd.addLine((lgds[2], "black", ":", 1))
-lgd.addLine(("Halo Gas", "blue", "-", 1))
+lgd.addLine((lgds[0], "blue", "--", 1))
+lgd.addLine((lgds[1], "blue", "-", 1))
+lgd.addLine((lgds[2], "red", "--", 1))
+lgd.addLine((lgds[3], "red", "-", 1))
+# lgd.addLine(("Halo Gas", "blue", "-", 1))
 # lgd.addLine(("Stars", "red", "-", 1))
 # lgd.addLine(("Stars (z<1)", "orange", "-", 1))
 lgd.draw()
@@ -103,7 +105,7 @@ else:
     ax.set_xlim(0.0, 10.0)
     ax.set_xlabel(r"$M_{p}/M_{p,orig}$")
 ax.set_ylabel("Fraction")
-plt.title("z = 0")
+plt.title("z = 0.2")
 plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
 plt.show()
 

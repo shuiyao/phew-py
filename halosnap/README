@@ -1,0 +1,28 @@
+Movie Creator
+================================
+Purpose: Create movies from HDF5 format snapshots
+
+Primary Usage:
+  1. showhalos.py
+     - Show haloes at z = 0
+     - Will display halo Msub and halo ID
+  2. find_domain_particles.py
+     - Get gas particles from a box region centered at given halo
+     - Specify simulation name ($model) and haloid, adjust lbox
+     - Generate files in $SCIDATA/halosnap/$model/box/
+       - Files include x y z hsml logT Mcloud SfFlag
+  3a. show_single_domain.py (Optional)
+     - Generate a single PNG files for certain redshift and halo
+     - We can tune parameters to find the best projection, plotting range, etc.
+  3b. makemovie.py
+     - Generate a PNG file for each file in the /box folder
+     - Output files in $SCIDATA/halosnap/$model/movie
+
+Other Programs:
+  - showgal.py
+    - Like showhalos.py, but showing galaxies instead.
+  - search_progenitors.py
+    - Search through snapshots to find the progenitors of a certain halo
+    - WARNING: It might be robust for only a few tens of snapshots
+  - show_progen_track.py
+    - Show the progenitors on the x,y,z plane.

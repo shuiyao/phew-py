@@ -7,15 +7,13 @@
 # 2. Generate .starinfo file from the .stars file and SFRINFO files
 # python stars_by_mvir modelname snapnum (mh??)
 
-# modelname="p50n288fiducial"
-#set modelname="l25n144-phewoff-g3cool"
-#set modelname="l25n144-phewoff"
-#set modelname="l25n144-gadget3"
-#set modelname="l25n144-phewoff"
-
 modelname=$1
 lbox=$2
-flag=1 # PHEW FLAG: 1 = PHEW
+
+flag=2
+# 0: Gadget3
+# 1: GIZMO-PhEW
+# 2: GIZMO-PhEW-Extra (Add extra tracking information)
 
 if [ ! $modelname ]; then
     echo "allstars.sh: Need model name. Force exit."
@@ -26,11 +24,15 @@ if [ ! $lbox ]; then
     exit
 fi
 
-# !!!!! DON'T FORGET TO CHANGE UNIT_M in allstars.py
 mkdir /scratch/shuiyao/scidata/gadget3io/$modelname
 
-./allstars $modelname 88 $lbox all
-python allstars.py $modelname 088 $lbox $flag
+# ./allstars $modelname 78 $lbox all
+# python allstars.py $modelname 078 $lbox $flag
+#./allstars $modelname 98 $lbox all
+python allstars.py $modelname 098 $lbox $flag
+
+#./allstars $modelname 98 $lbox all
+#python allstars.py $modelname 098 $lbox $flag
 
 # ./allstars $modelname 108
 # python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
