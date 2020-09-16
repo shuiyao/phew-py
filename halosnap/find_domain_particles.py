@@ -1,19 +1,31 @@
 from mymod import *
 from cosmology import acosmic, tcosmic
 import h5py
-import os
+import os, sys
 
 # ================================
 # Use showhalos.py to select haloes
 # ================================
 
+TRACK_PROGEN = True
+
 model = "l12n144-phew-movie"
 lbox = 12000.
-haloid = 2318 # log(Msub) ~ 12.0 Spiral
+#haloid = 2318 # log(Msub) ~ 12.0 Spiral
 
-# haloid = 1503 # log(Msub) ~ 11.0
+#haloid = 920 # log(Msub) ~ 11.0
+#haloid = 1402 # log(Msub) ~ 11.0
+haloid = 1503 # log(Msub) ~ 11.0
+haloid = 1280 # log(Msub) ~ 11.0
 #haloid = 1972 # log(Msub) ~ 12.0
+# haloid = 1927 # log(Msub) ~ 12.0
+#haloid = 2691 # log(Msub) ~ 12.0
 #haloid = 251 # log(Msub) ~ 13.0
+#haloid = 1142
+
+if(len(sys.argv) == 2):
+    haloid = int(sys.argv[1])
+print "-----> Halo ID = ", haloid
 
 # Get info at each snapshot: logrho, logT, Halo Mvir
 hparam = 0.7
@@ -49,13 +61,24 @@ datadir = "/proj/shuiyao/" + model + "/"
 
 # Loop Begins Here
 # ================================
+if(TRACK_PROGEN):
+    fprogen = "progen_"+halostr
+    hids, xs, ys, zs = ioformat.rcol(fprogen, [0,1,2,3], [0])
 
-for snapi in range(201):
-    if(snapi < 10): continue
+for i in range(201):
+    if(TRACK_PROGEN and i > len(hids)): break
+    if(TRACK_PROGEN):
+        snapi = 200 - i
+        HaloPos[0] = xs[i]
+        HaloPos[1] = ys[i]
+        HaloPos[2] = zs[i]
+        print "Galaxy Position: ", HaloPos        
+        HaloPos = (HaloPos + 0.5) * lbox        
+    else: snapi = i
     zstr = ("000"+str(snapi))[-3:]
     snapname = datadir + "snapshot_"+zstr+".hdf5"
 
-    outname = fbase + "movie/" + "box_" + halostr + "_" + zstr
+    outname = fbase + "box/" + "box_" + halostr + "_" + zstr
     print "Reading: ", snapname
     print "Writing: ", outname
 

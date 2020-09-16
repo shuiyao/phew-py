@@ -16,10 +16,10 @@ fbase = "/scratch/shuiyao/Jneil/column_density/"
 # modelstr = "x300v1700lc"
 # model = "T0.3_v1700_chi300_cond"
 # modelstr = "x300v1700c"
-# model = "T0.3_v1700_chi300"
-# modelstr = "x300v1700"
-model = "T1_v1700_chi1000_cond"
-modelstr = "x1000v1700c"
+model = "T0.3_v1700_chi300"
+modelstr = "x300v1700"
+# model = "T1_v1700_chi1000_cond"
+# modelstr = "x1000v1700c"
 
 fnamex = fbase + model + "_x.csv"
 fnamey = fbase + model + ".csv"
@@ -30,12 +30,13 @@ NPIXCLOUD = 7854
 if(PROJ == "perpendicular"):
     # NPIXLIM = (int)(NPIXCLOUD * 1.75) # x300v1700lc    
     # NPIXLIM = (int)(NPIXCLOUD * 1.40) # x300v1700c
-    # NPIXLIM = (int)(NPIXCLOUD * 4.00) # x300v1700
-    NPIXLIM = (int)(NPIXCLOUD * 0.45) # x1000v1700c
+    NPIXLIM = (int)(NPIXCLOUD * 4.00) # x300v1700
+    # NPIXLIM = (int)(NPIXCLOUD * 0.45) # x1000v1700c
 if(PROJ == "parallel"):
     # NPIXLIM = (int)(NPIXCLOUD * 0.225) x300v1700lc
     # NPIXLIM = (int)(NPIXCLOUD * 0.16) # x300v1700c
-    NPIXLIM = (int)(NPIXCLOUD * 0.18) # x1000v1700c
+    NPIXLIM = (int)(NPIXCLOUD * 2.00) # x300v1700
+    # NPIXLIM = (int)(NPIXCLOUD * 0.18) # x1000v1700c
 
 # Use 2 * NPIXCLOUD;
 # Sort column densities from large to small, until 2 x NPIXCLOUD are found
@@ -100,7 +101,8 @@ def draw():
     foutnamey = "pdfs/"+modelstr2+"_i9_pdf.dat"
     # Ncorr = 0.225 / 1.75
     # Ncorr = 0.16 / 1.4    
-    Ncorr = 1.75 / 0.45
+    # Ncorr = 1.75 / 0.45
+    Ncorr = 4.00 / 2.00    
     # Ncorr = 1.0
     tabx = genfromtxt(foutnamex, names=True)
     taby = genfromtxt(foutnamey, names=True)    

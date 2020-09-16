@@ -5,10 +5,10 @@ import ioformat
 from matplotlib.patches import Circle
 
 model = "l12n144-phew-movie"
-zstr = "200"
+zstr = "400"
 
-galname = "/proj/shuiyao/"+model+"/gal_z"+zstr+".stat"
-soname = "/proj/shuiyao/"+model+"/so_z"+zstr+".sovcirc"
+galname = "/scratch/shuiyao/data/"+model+"/gal_z"+zstr+".stat"
+soname = "/scratch/shuiyao/data/"+model+"/so_z"+zstr+".sovcirc"
 
 GalTxt = "GIDX" # MSTAR, GID, GIDX
 LABEL = True

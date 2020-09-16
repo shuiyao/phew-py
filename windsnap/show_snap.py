@@ -24,6 +24,8 @@ UNIT_T = sqrt(8.0*pi/3.0) * ac.kpc * 1.e3 / (100.0 * HUBBLEPARAM * 1.e5)
 UNIT_V = UNIT_L * ac.kpc / UNIT_T / sqrt(ASCALE)
 NC = 1000. # Now use nc[i]
 USE_RCLOUD_AS_SIZE = True
+# RFAC = 10.0 # Boost covering area by a factor of RFAC * RFAC
+RFAC = 2.3 # Boost covering area by a factor of RFAC * RFAC
 
 print "UNIT_V = ", UNIT_V, "[km/s]"
 
@@ -147,7 +149,8 @@ if(PLOT_WINDS == True):
             clr = cmap(clr)
             if(flag == 1):
                 if(USE_RCLOUD_AS_SIZE):
-                    ax.add_patch(Circle((xw[i], yw[i]), radius=rc[i]*sqrt(nc[i]), fc=clr, ec="k"))
+                    # ax.add_patch(Circle((xw[i], yw[i]), radius=RFAC*rc[i]*sqrt(nc[i]), fc=clr, ec="k"))
+                    ax.add_patch(Circle((xw[i], yw[i]), radius=RFAC*rc[i]*sqrt(nc[i]), color=clr, fill=False))
                 else:
                     ax.add_patch(Circle((xw[i], yw[i]), radius=(XMAX-XMIN)/200.0, fc=clr, ec="k"))
             else:

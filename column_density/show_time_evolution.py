@@ -20,8 +20,8 @@ modelref = "T0.3_v1700_chi300_cond"
 # modelstr = "x1000v1700"
 # model = "LowCond_v1700_chi300_cond"
 # modelstr = "x300v1700c02"
-model = "T0.3_v1700_chi300_cond"
-modelstr = "x300v1700"
+model = "T0.3_v1700_chi300"
+modelstr = "x300v1700kh"
 mode = "frac" # frac or logN
 fnamex = fbase + model + "_x.csv"
 fnamey = fbase + model + ".csv"
@@ -69,8 +69,9 @@ if(mode == "logN"):
     panels.set_yticks([0.0, 2.0, 4.0])
     panels.set_ylabels(r"$\log(n)$")
 if(mode == "frac"):
-    panels.set_ylims(0.0, 2.5)
-    panels.set_yticks([0.0, 0.5, 1.0, 1.5, 2.0])
+    panels.set_ylims(0.0, 4.0)
+    # panels.set_yticks([0.0, 0.5, 1.0, 1.5, 2.0])
+    panels.set_yticks([0.0, 1.0, 2.0, 3.0, 4.0])    
     panels.set_ylabels(r"CS")
 panels.set_xlims(10.0, 20.0)
 panels.set_xticks([10.0, 12.0, 14.0, 16.0, 18.0])
