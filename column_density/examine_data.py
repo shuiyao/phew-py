@@ -48,7 +48,7 @@ ionnames = ["XX","OVI","CIV","NV","CII","NeVIII","CIII","MgII","SiIII","SiIV","H
 ionorder = [-1, 5, 3, -1, -1, 6, 2, 7, -1, 8, 0]
 
 ionidxs = [10, -1, 6, 2, -1, 1, 5, 7, 9] # Mapping from the 9ions to ionnames
-clrs = ["blue", "cyan", "lime", "green", "plum", "orange", "red", "steelblue", "olive"]
+clrs = ["blue", "steelblue", "lime", "green", "plum", "orange", "red", "purple", "olive"]
 lgds = ["HI","HeII(N/A)","CIII","CIV","OIV(N/A)","OVI","NeVIII","MgII","SiIV"]
 ions = ["HI","HeII","CIII","CIV","OIV","OVI","NeVIII","MgII","SiIV"]
 
@@ -60,7 +60,7 @@ ions = ["HI","HeII","CIII","CIV","OIV","OVI","NeVIII","MgII","SiIV"]
 # Row: 9 ions
 # column: PDF for each ion, 100 cells (101 lines)
 NCELLS = 100
-cols = range(0, 10)
+cols = range(1, 11)
 
 def generate_pdf_tables():
     tabout = []
@@ -96,28 +96,34 @@ def generate_pdf_tables():
 
 def draw():
     fig, ax = plt.subplots(1,1,figsize=(8,6))
-    modelstr1 = 'T0.3_v1700_chi300_cond_10'
-    # modelstr2 = 'T0.3_v1700_chi300_cond_0-1'
-    # modelstr2 = 'T0.3_v1700_chi300_cond_100'
-    modelstr2 = 'T0.3_v1700_chi300_cond_0-01'        
-    foutnamex = "pdfs/"+modelstr1+"_i9_y_pdf.dat"
-    foutnamey = "pdfs/"+modelstr2+"_i9_y_pdf.dat"
+    models = ['T0.3_v1700_chi300_cond_0-01',\
+              'T0.3_v1700_chi300_cond_0-1',\
+              'x300v1700c',\              
+              'T0.3_v1700_chi300_cond_10',\
+              'T0.3_v1700_chi300_cond_100']
+    lgds_uv = ['x0.01', 'x0.1', 'x1', 'x10', 'x100']
+    # lstyles = [":", "--", "-", "--", ":"]
+    lstyles = ["dotted", "dashed", (0,(5,1)), (0,(3,1,1,1)), "-"]    
+    lw = [1,1,2,1,1]
+    foutnames = []
+    for model in models: foutnames.append("pdfs/"+model+"_i9_y_pdf.dat")
     # Ncorr = 0.16 / 1.4
     Ncorr = 1.0
-    tabx = genfromtxt(foutnamex, names=True)
-    taby = genfromtxt(foutnamey, names=True)    
-    edges = tabx['PlogN']
     ilist = range(9)
     # ilist = [0,3,5,7]
-    for i in ilist:
-        ion = ions[i]
-        ax.plot(tabx[ion], edges, "-", color=clrs[i])
-        ax.plot(taby[ion] + log10(Ncorr), edges, "--", color=clrs[i])
-    ax.set_xlim(10., 20.)
+    for fi, foutname in enumerate(foutnames):
+        print (foutname)
+        tab = genfromtxt(foutname, names=True)
+        edges = tab['PlogN']
+        for i in ilist:
+            ion = ions[i]
+            ax.plot(tab[ion], edges, linestyle=lstyles[fi], color=clrs[i], linewidth=lw[fi])
+            # ax.plot(taby[ion] + log10(Ncorr), edges, "--", color=clrs[i])
+    ax.set_xlim(12., 22.)
     ax.set_ylim(0., 1.)
     ax.set_xlabel(r"$\log(N_{ion})$")
     ax.set_ylabel(r"P")
-    ax.set_title(modelstr1)
+    ax.set_title("x300v1700")
     # if(PROJ == "perpendicular"):
     #     ax.set_title("x300v1700-lc, Perpendicular")
     # else:
@@ -129,8 +135,8 @@ def draw():
     lgd.loc = "lower left"
     lgd.draw()
     lgd2 = legend.legend(ax)
-    lgd2.addLine((modelstr1, "black", "-", 1))
-    lgd2.addLine((modelstr2, "black", "--", 1))    
+    for i in range(5):
+        lgd2.addLine((lgds_uv[i], "black", lstyles[i], lw[i]))
     lgd2.loc = "upper right"
     lgd2.draw()
     plt.savefig("/scratch/shuiyao/figures/tmp.pdf")

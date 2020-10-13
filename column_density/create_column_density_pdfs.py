@@ -16,26 +16,28 @@ fbase = "/scratch/shuiyao/Jneil/column_density/"
 # modelstr = "x300v1700lc"
 # model = "T0.3_v1700_chi300_cond"
 # modelstr = "x300v1700c"
-model = "T0.3_v1700_chi300"
-modelstr = "x300v1700"
+# model = "T0.3_v1700_chi300"
+# modelstr = "x300v1700"
 # model = "T1_v1700_chi1000_cond"
 # modelstr = "x1000v1700c"
+model = "otherBackgrounds/T0.3_v1700_chi300_cond_0-1"
+modelstr = "x300v1700cUV01"
 
 fnamex = fbase + model + "_x.csv"
-fnamey = fbase + model + ".csv"
+fnamey = fbase + model + "_y.csv"
 NPIX = 640000
 # each pix: 2 pc x 2 pc
 # Initial cloud size pi * 100 pc x 100 pc ~ 7854 pix
 NPIXCLOUD = 7854
 if(PROJ == "perpendicular"):
     # NPIXLIM = (int)(NPIXCLOUD * 1.75) # x300v1700lc    
-    # NPIXLIM = (int)(NPIXCLOUD * 1.40) # x300v1700c
-    NPIXLIM = (int)(NPIXCLOUD * 4.00) # x300v1700
+    NPIXLIM = (int)(NPIXCLOUD * 1.40) # x300v1700c
+    # NPIXLIM = (int)(NPIXCLOUD * 4.00) # x300v1700
     # NPIXLIM = (int)(NPIXCLOUD * 0.45) # x1000v1700c
 if(PROJ == "parallel"):
     # NPIXLIM = (int)(NPIXCLOUD * 0.225) x300v1700lc
-    # NPIXLIM = (int)(NPIXCLOUD * 0.16) # x300v1700c
-    NPIXLIM = (int)(NPIXCLOUD * 2.00) # x300v1700
+    NPIXLIM = (int)(NPIXCLOUD * 0.16) # x300v1700c
+    # NPIXLIM = (int)(NPIXCLOUD * 2.00) # x300v1700
     # NPIXLIM = (int)(NPIXCLOUD * 0.18) # x1000v1700c
 
 # Use 2 * NPIXCLOUD;

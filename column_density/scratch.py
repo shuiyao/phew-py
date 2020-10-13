@@ -4,9 +4,13 @@ import matplotlib.pyplot as plt
 
 # x is perpendicular to the wind
 
-fbase = "/scratch/shuiyao/Jneil/column_density/"
-fnamex = fbase + "LowCond_v1700_chi300_cond_x.csv"
-fnamey = fbase + "LowCond_v1700_chi300_cond.csv"
+fbase = "/scratch/shuiyao/Jneil/column_density/otherBackgrounds/"
+# fnamex = fbase + "LowCond_v1700_chi300_cond_x.csv"
+# fnamey = fbase + "LowCond_v1700_chi300_cond_y.csv"
+fnamex = fbase + "T0.3_v1700_chi300_cond_0-01_y.csv"
+#fnamey = fbase + "T0.3_v1700_chi300_cond_0-1_y.csv"
+#fnamey = fbase + "../T0.3_v1700_chi300_cond_y.csv"
+fnamey = fbase + "T0.3_v1700_chi300_cond_100_y.csv"
 
 clrs_t = ["magenta", "red", "orange", "yellow"]
 
@@ -21,6 +25,10 @@ if(snapt == "t25"):
 
 cols1 = [21, 22, 30]
 cols2 = [31, 32, 40]
+
+cols1 = [1,2,10]
+# cols2 = [21,22,30]
+cols2 = [1,2,10]
 
 def convert_list(lst):
     lst = array(lst)
@@ -44,12 +52,12 @@ CIVy = convert_list(CIVy)
 HIy = convert_list(HIy)
 
 nbins = 100
-plt.hist(HI0x, bins=nbins, color="cyan", histtype="step")
-plt.hist(CIV0x, bins=nbins, color="lime", histtype="step")
-plt.hist(OVI0x, bins=nbins, color="orange", histtype="step")
-plt.hist(HI0y, bins=nbins, color="blue", histtype="step")
-plt.hist(CIV0y, bins=nbins, color="green", histtype="step")
-plt.hist(OVI0y, bins=nbins, color="red", histtype="step")
+plt.hist(HIx, bins=nbins, color="cyan", histtype="step")
+plt.hist(CIVx, bins=nbins, color="lime", histtype="step")
+plt.hist(OVIx, bins=nbins, color="orange", histtype="step")
+plt.hist(HIy, bins=nbins, color="blue", histtype="step")
+plt.hist(CIVy, bins=nbins, color="green", histtype="step")
+plt.hist(OVIy, bins=nbins, color="red", histtype="step")
 plt.legend(["HI90x","CIV90x","OVI90x","HI90y","CIV90y","OVI90y"])
 plt.xlabel("log(N)")
 plt.ylabel("Count")
