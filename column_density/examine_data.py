@@ -15,10 +15,11 @@ PROJ = "parallel"
 fbase = "/scratch/shuiyao/Jneil/column_density/"
 uvbkg = "otherBackgrounds/"
 model = "T0.3_v1700_chi300_cond"
-bkgstr = ["0-01", "0-1", "10", "100"]
+# bkgstr = ["0-01", "0-1", "10", "100"]
+bkgstr = ["1e5", "1e6", "1e7"]
 
 # I. Generate the CPDF Files
-# for bki in [0,1,2,3]:
+# for bki in [0,1,2]:
 #     modelstr = model + "_" + bkgstr[bki]
 #     fnamex = fbase + uvbkg + modelstr + "_x.csv"
 #     fnamey = fbase + uvbkg + modelstr + "_y.csv"
@@ -96,12 +97,18 @@ def generate_pdf_tables():
 
 def draw():
     fig, ax = plt.subplots(1,1,figsize=(8,6))
-    models = ['T0.3_v1700_chi300_cond_0-01',\
-              'T0.3_v1700_chi300_cond_0-1',\
-              'x300v1700c',\              
-              'T0.3_v1700_chi300_cond_10',\
-              'T0.3_v1700_chi300_cond_100']
-    lgds_uv = ['x0.01', 'x0.1', 'x1', 'x10', 'x100']
+    # models = ['T0.3_v1700_chi300_cond_0-01',\
+    #           'T0.3_v1700_chi300_cond_0-1',\
+    #           'x300v1700c',\              
+    #           'T0.3_v1700_chi300_cond_10',\
+    #           'T0.3_v1700_chi300_cond_100']
+    # lgds_uv = ['x0.01', 'x0.1', 'x1', 'x10', 'x100']
+    models = ['T0.3_v1700_chi300_cond_10',\
+              'T0.3_v1700_chi300_cond_100',\
+              'T0.3_v1700_chi300_cond_1e5',\
+              'T0.3_v1700_chi300_cond_1e6',\              
+              'T0.3_v1700_chi300_cond_1e7']
+    lgds_uv = ['x10', 'x100', 'x1e5', 'x1e6', 'x1e7']
     # lstyles = [":", "--", "-", "--", ":"]
     lstyles = ["dotted", "dashed", (0,(5,1)), (0,(3,1,1,1)), "-"]    
     lw = [1,1,2,1,1]
