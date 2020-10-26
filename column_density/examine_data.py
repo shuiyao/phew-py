@@ -16,16 +16,15 @@ fbase = "/scratch/shuiyao/Jneil/column_density/"
 uvbkg = "otherBackgrounds/"
 model = "T0.3_v1700_chi300_cond"
 # bkgstr = ["0-01", "0-1", "10", "100"]
-bkgstr = ["1e5", "1e6", "1e7"]
+# bkgstr = ["1e5", "1e6", "1e7"]
+bkgstr = ["1e5T2", "1e6T2", "1e7T2"]
 
 # I. Generate the CPDF Files
-# for bki in [0,1,2]:
-#     modelstr = model + "_" + bkgstr[bki]
-#     fnamex = fbase + uvbkg + modelstr + "_x.csv"
-#     fnamey = fbase + uvbkg + modelstr + "_y.csv"
-#     generate_pdf_tables()
-
-
+for bki in [0,1,2]:
+    modelstr = model + "_" + bkgstr[bki]
+    fnamex = fbase + uvbkg + modelstr + "_x.csv"
+    fnamey = fbase + uvbkg + modelstr + "_y.csv"
+    generate_pdf_tables()
 
 # fnamex = fbase + model + "_x.csv"
 # fnamey = fbase + model + ".csv"
@@ -77,10 +76,10 @@ def generate_pdf_tables():
         idx = ionidxs[i] 
         if(idx == -1):
             tabout.append(array([0.0] * (NCELLS+1)))
-            print "---"
+            print ("---")
             continue
         ionname = ionnames[idx]
-        print ionname
+        print (ionname)
         ioncds[idx-1].sort()
         prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::NPIXLIM/NCELLS][:NCELLS+1])
         tabout.append(prob)
@@ -149,4 +148,4 @@ def draw():
     plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
     plt.show()
 
-print "done"
+print ("done")
