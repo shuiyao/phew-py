@@ -13,6 +13,7 @@
 int flag_write_phew = 0;
 int flag_write_sph = 0;
 int flag_write_halo = 0;
+int haloid;
 char base_name[MAX_LEN_FILENAME];
 
 #define NSPH 50000
@@ -37,7 +38,10 @@ int main(int argc, char **argv){
   load_hdf5(base_name);
 
   cosmounits();
-v
+
+  /* Obsolete. */
+  /* We used to over-plot SPH particles that used to be PhEW. */
+  /* BUT, now PhEW almost never becomes SPH particle any more. */
   if(flag_write_sph == 1)
     write_sph_particles(base_name);
 
@@ -81,22 +85,23 @@ int write_sph_particles(char *snap){
   return 1;
 }
 
-int is_particle_in_halo(int i){
-  int k;
-  for(k = 0; k < 3; k++)
-    if(P[i].Pos[k] < HPos)
-}
+/* int is_particle_in_halo(int i){ */
+/*   int k; */
+/*   for(k = 0; k < 3; k++) */
+/*     if(P[i].Pos[k] < HPos) */
+/* } */
 
 int write_phew_particles(char *snap){
   int i;
   char filename[200];
   FILE *outputfile;
-  double MeanWeight, LogRho, LogTemp;
+  double MeanWeight, LogRho, LogTemp, LogRhoa, LogTempa;
   int icount = 0;
   
-  sprintf(filename, "%s.phewparts", snap);
+  sprintf(filename, "%s.phews", snap);
   outputfile = fopen(filename, "w");
-  fprintf(outputfile, "#idx rho[g/cm-3] Log(T[K]) f_cloud f_wind LastSFTime\n");
+  /* 20201104: Add rhoa and Ta */
+  fprintf(outputfile, "#idx rhoc Tc rhoa Ta f_cloud f_wind LastSFTime\n");
   for(i=0; i < h.npart[0]; i++) {
     if(P[i].Mcloud != 0){ // Is or Has been a PhEW
       /* Density consistent with the rhot.c */
@@ -112,9 +117,15 @@ int write_phew_particles(char *snap){
       LogTemp = P[i].Temp * unit_Temp;
       LogTemp = log10(LogTemp * GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight);
       /* Now we have temperature for the particle. */
+      /* For wind particles, use SFR and Tmax for ambient_density and u_ambient */
+      LogRhoa = P[i].Sfr * UNIT_M / (pow(UNIT_L, 3) * unit_Density);
+      LogRhoa = log10(LogRhoa * gheader.HubbleParam * gheader.HubbleParam / OMEGABARYON);
+      MeanWeight = (1 + 4 * XHE) / (1 + 1.15 + XHE); /* Assuming fully ionized */
+      LogTempa = P[i].Tmax;
+      LogTempa = log10(LogTempa * GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight);
     
-      fprintf(outputfile,"%d %7.5e %6.4f %5.3f %5.3e %7.5f\n",
-	      i, LogRho, LogTemp, P[i].Mcloud, P[i].WindMass, P[i].LastSFTime);
+      fprintf(outputfile,"%d %7.5e %6.4f %7.5e %6.4f %5.3f %5.3e %7.5f\n",
+	      i, LogRho, LogTemp, LogRhoa, LogTempa, P[i].Mcloud, P[i].WindMass, P[i].LastSFTime);
     } // Mcloud != 0
   }
   fclose(outputfile);

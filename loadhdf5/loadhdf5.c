@@ -26,6 +26,7 @@ double unit_Velocity;
 double unit_Temp;
 
 struct particle_data *P;
+struct gadget_dump gheader;
 struct gadget_dump h;
 
 int flag_read_dark = 0;

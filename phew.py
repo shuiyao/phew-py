@@ -13,7 +13,7 @@ NSKIP = 1
 
 # figure()
 modelname = "m4"
-MASS_CLOUD = 2.0e37
+MASS_CLOUD = 2.0e38
 model = "l50n288-phew-"+modelname
 filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
 fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"    
@@ -28,7 +28,7 @@ class PhEWFields():
     >>> tab = read_phew_tracks("phews.sample", info_fields)
     '''
     def __init__(self, fname="fields.dat"):
-        self.fields = genfromtxt(fname, dtype="i8,S2,S10", names=True)
+        self.fields = genfromtxt(fname, dtype="i8,U2,U10", names=True)
         self.idx = {}
         self.nfields = len(self.fields)
         for i in range(self.nfields): self.idx[self.fields['name'][i]] = self.fields['idx'][i]
@@ -46,9 +46,9 @@ class PhEWFields():
             dtypestr += self.fields['dtype'][idx] + ","
         return (cols, dtypestr, namelst)
         if(verbose == True):
-            print "idx: ", cols
-            print "names: ", namelst
-            print "dtypes: ", dtypestr
+            print ("idx: ", cols)
+            print ("names: ", namelst)
+            print ("dtypes: ", dtypestr)
 
 class PhEWParticle():
     def __init__(self, key):
@@ -68,7 +68,7 @@ def read_phew_fields(fname, fields):
     tab = genfromtxt(fname, usecols=fields[0], dtype=fields[1], names=fields[2], skip_header=1)
     return tab
 
-print "Compiled."
+print ("Compiled.")
 
 def create_phew_particles(PhEWTracks):
     PhEWParticles = []
@@ -84,10 +84,11 @@ def create_phew_particles(PhEWTracks):
             PhEWP = PhEWParticle(thisKey) # Create a new one
             PhEWP.track.append(PhEWTracks[i])            
         else:
-            raise ValueError, "Tracks data not sorted?"
+            print("ERROR: Tracks data not sorted.")
+            exit(-1)
     PhEWP.track = array(PhEWP.track, dtype=PhEWTracks.dtype)
     PhEWParticles.append(PhEWP)
-    print "---> Created %d PhEW particles from tracks.\n" % (len(PhEWParticles))
+    print ("---> Created %d PhEW particles from tracks.\n" % (len(PhEWParticles)))
     return PhEWParticles
 
 def set_colors_phew_particles(PhEWParticles, field, vmin, vmax, logscale=False, cmap=plt.get_cmap(CMAP)):
@@ -187,7 +188,7 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
     if(color_max == None): color_max = max(fieldc)
     set_colors_phew_particles(PhEWParticles, fieldc, color_min, color_max, logscale=logcscale)
     iskip = 0
-    print "------ ", fieldy, "------"
+    print ("------ ", fieldy, "------")
     for i, PhEWP in enumerate(PhEWParticles):
     #     if(PhEWP.mvir > 13.0): print i
             
@@ -227,7 +228,7 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
 # filename = "phews.sample"
 # filename = "/proj/shuiyao/m6n64beta5/WINDS/z2/sorted.phews"
 def load_particles(filename=filename, fphewsname=fphewsname, fformat='New'):
-    print "Loading PhEW particles from ", fphewsname
+    print ("Loading PhEW particles from ", fphewsname)
     Fields = PhEWFields()
     info_fields = Fields.get_field_info(["atime","Mass","Key","dr","dv","vrel","Mach","M_cloud","rho_a", "rho_c", "Mstar","T_c","T_a","t_dis","t_evap","t_khi"], verbose=True)
     tab = read_phew_fields(filename, info_fields)
@@ -248,7 +249,7 @@ def draw_field():
     # draw_phew_particles(pparts, ax, 'atime', 'Mach', 'vrel', nskip=1, logyscale=False, color_min=500.e5, color_max=900.e5, alpha=0.2) # REJOIN
     parts_to_show = select_particles(pparts)    
     draw_phew_particles(parts_to_show, ax, 'time', 't_dis', 'Mvir', nskip=1, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.5)
-    print counter_spurious_particles
+    print (counter_spurious_particles)
     ax.set_xlim(0, 500)    
     ax.set_ylim(0, 1000)
     ax.set_xlabel("Time [Myr]")
@@ -301,7 +302,7 @@ def figure():
     parts_to_show = select_particles(pparts)
     # parts_to_show = select_hard_particles(pparts)    
     draw_phew_particles(parts_to_show, axs[0], 'time', 'r/rvir', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.4)
-    print counter_spurious_particles
+    print (counter_spurious_particles)
     draw_phew_particles(parts_to_show, axs[1], 'time', 'Mach', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.4)
     draw_phew_particles(parts_to_show, axs[2], 'time', 'M_cloud', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.4)
     draw_phew_particles(parts_to_show, axs[3], 'time', 'T_a', 'Mvir', nskip=NSKIP, logyscale=True, color_min=11.0, color_max=13.5, alpha=0.4)

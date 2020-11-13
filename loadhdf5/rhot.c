@@ -5,8 +5,8 @@
 #include "loadhdf5.h"
 #include "gadgetdefs.h"
 
-struct particle_data *P;
-struct gadget_dump h;
+/* struct particle_data *P; */
+/* struct gadget_dump h; */
 
 #define NUMOFNODES_X 256
 #define NUMOFNODES_Y 256
@@ -55,11 +55,11 @@ int LoadGrid(int nx, int ny)
   return 1;
 }
 
-void get_filenames(char *modelid, char *snapbase, int snapnum)
+void get_filenames(char *snapbase, int snapnum)
 {
   char snapstr[4];
   get_snap_string(snapnum, snapstr);
-  sprintf(outfilename, "mrhot_phew_%s_%s", modelid, snapstr);
+  sprintf(outfilename, "mrhot_phew_%s", snapstr);
   sprintf(infilename, "%s_%s", snapbase, snapstr);
 }
 
@@ -130,20 +130,19 @@ int main(int argc, char **argv)
 {
   /* Calling Sequence: */
   /* rhot_hist snapbase 00 33 256 256 */
-  char modelid[3], snapbase[200];
+  char snapbase[200];
   int snapnum;  
   strcpy(snapbase, argv[1]);
-  strcpy(modelid, argv[2]);
-  snapnum = atoi(argv[3]);
-  if (argc == 6)
-    { ncells_x = atoi(argv[4]);
-      ncells_y = atoi(argv[5]);
+  snapnum = atoi(argv[2]);
+  if (argc == 5)
+    { ncells_x = atoi(argv[3]);
+      ncells_y = atoi(argv[4]);
     }
   else
     { ncells_x = NUMOFNODES_X;
       ncells_y = NUMOFNODES_Y;
     }
-  get_filenames(modelid, snapbase, snapnum);
+  get_filenames(snapbase, snapnum);
   LoadGrid(ncells_x, ncells_y);
   ReadData(infilename);
   WriteGrid(outfilename);

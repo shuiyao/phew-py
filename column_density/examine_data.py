@@ -9,22 +9,15 @@ import pdb
 
 # x is perpendicular to the wind
 
-PROJ = "perpendicular"
+# PROJ = "perpendicular"
 PROJ = "parallel"
 
-fbase = "/scratch/shuiyao/Jneil/column_density/"
+fbase = "/home/shuiyao_umass_edu/scidata/Jneil/column_density/"
 uvbkg = "otherBackgrounds/"
 model = "T0.3_v1700_chi300_cond"
 # bkgstr = ["0-01", "0-1", "10", "100"]
 # bkgstr = ["1e5", "1e6", "1e7"]
 bkgstr = ["1e5T2", "1e6T2", "1e7T2"]
-
-# I. Generate the CPDF Files
-for bki in [0,1,2]:
-    modelstr = model + "_" + bkgstr[bki]
-    fnamex = fbase + uvbkg + modelstr + "_x.csv"
-    fnamey = fbase + uvbkg + modelstr + "_y.csv"
-    generate_pdf_tables()
 
 # fnamex = fbase + model + "_x.csv"
 # fnamey = fbase + model + ".csv"
@@ -81,7 +74,8 @@ def generate_pdf_tables():
         ionname = ionnames[idx]
         print (ionname)
         ioncds[idx-1].sort()
-        prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::NPIXLIM/NCELLS][:NCELLS+1])
+        # pdb.set_trace()
+        prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::(int)(NPIXLIM/NCELLS)][:NCELLS+1])
         tabout.append(prob)
 
     fout = open(foutname, "w")
@@ -94,6 +88,13 @@ def generate_pdf_tables():
         fout.write(line)
     fout.close()
 
+#I. Generate the CPDF Files
+# for bki in [0,1,2]:
+#     modelstr = model + "_" + bkgstr[bki]
+#     fnamex = fbase + uvbkg + modelstr + "_x.csv"
+#     fnamey = fbase + uvbkg + modelstr + "_y.csv"
+#     generate_pdf_tables()
+
 def draw():
     fig, ax = plt.subplots(1,1,figsize=(8,6))
     # models = ['T0.3_v1700_chi300_cond_0-01',\
@@ -102,15 +103,26 @@ def draw():
     #           'T0.3_v1700_chi300_cond_10',\
     #           'T0.3_v1700_chi300_cond_100']
     # lgds_uv = ['x0.01', 'x0.1', 'x1', 'x10', 'x100']
-    models = ['T0.3_v1700_chi300_cond_10',\
-              'T0.3_v1700_chi300_cond_100',\
-              'T0.3_v1700_chi300_cond_1e5',\
-              'T0.3_v1700_chi300_cond_1e6',\              
-              'T0.3_v1700_chi300_cond_1e7']
-    lgds_uv = ['x10', 'x100', 'x1e5', 'x1e6', 'x1e7']
+    # models = ['T0.3_v1700_chi300_cond_10',\
+    #           'T0.3_v1700_chi300_cond_100',\
+    #           'T0.3_v1700_chi300_cond_1e5',\
+    #           'T0.3_v1700_chi300_cond_1e6',\
+    #           'T0.3_v1700_chi300_cond_1e5T2']
+    #           # 'T0.3_v1700_chi300_cond_1e7']
+    # lgds_uv = ['x10', 'x100', 'x1e5', 'x1e6', 'x1e7']
+    # lstyles = ["dotted", "dashed", (0,(5,1)), (0,(3,1,1,1)), "-"]
+    # lw = [1,1,2,1,1]
+    
+    models = [\
+              'T0.3_v1700_chi300_cond_1e6',\
+              'T0.3_v1700_chi300_cond_1e6T2']
+              # 'T0.3_v1700_chi300_cond_1e7']
+    lgds_uv = ['x1e6; Tfloor=1e4', 'x1e6; Tfloor=2e4']
+    lstyles = [":", "-"]
+    lw = [2,2]
     # lstyles = [":", "--", "-", "--", ":"]
-    lstyles = ["dotted", "dashed", (0,(5,1)), (0,(3,1,1,1)), "-"]    
-    lw = [1,1,2,1,1]
+    
+    
     foutnames = []
     for model in models: foutnames.append("pdfs/"+model+"_i9_y_pdf.dat")
     # Ncorr = 0.16 / 1.4
@@ -125,7 +137,7 @@ def draw():
             ion = ions[i]
             ax.plot(tab[ion], edges, linestyle=lstyles[fi], color=clrs[i], linewidth=lw[fi])
             # ax.plot(taby[ion] + log10(Ncorr), edges, "--", color=clrs[i])
-    ax.set_xlim(12., 22.)
+    ax.set_xlim(8., 18.)
     ax.set_ylim(0., 1.)
     ax.set_xlabel(r"$\log(N_{ion})$")
     ax.set_ylabel(r"P")
@@ -141,11 +153,11 @@ def draw():
     lgd.loc = "lower left"
     lgd.draw()
     lgd2 = legend.legend(ax)
-    for i in range(5):
+    for i in range(2):
         lgd2.addLine((lgds_uv[i], "black", lstyles[i], lw[i]))
     lgd2.loc = "upper right"
     lgd2.draw()
-    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+    plt.savefig("/home/shuiyao_umass_edu/figures/tmp.pdf")
     plt.show()
 
 print ("done")

@@ -2,14 +2,14 @@
 # HDF5INCL = -I/usr/include/hdf5/serial
 # HDF5LIB  = -L/usr/lib/x86_64-linux-gnu/hdf5/serial /usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.a /usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5_hl.a -lpthread -lz -ldl
 
-HDF5INCL = -I/home/shuiyao/hdf5/include
-HDF5LIB = -L/home/shuiyao/hdf5/lib -lhdf5 -lz
+# HDF5INCL = -I/home/shuiyao/hdf5/include
+HDF5LIB = -lhdf5 -lz
 
 OPT += -DH5_USE_16_API
 #OPT += -DNMETALS=11 # How many species are tracked in the HDF5 "Metallicity"  block? If not set correctly, code returns segmentation fault after the output "Reading GAS for file #%d"
 
 OPT += -DPHEW_EXTRA_OUTPUT
-OPT += -DPHEW_TRACK_INFO
+#OPT += -DPHEW_TRACK_INFO
 
 CC= gcc
 CLINK=gcc
@@ -19,7 +19,7 @@ CLIB= -lm $(HDF5LIB)
 
 INCL = loadhdf5.h gadgetdefs.h tipsydefs.h
 
-all: get_halo_particles
+all: rhot get_particles get_halo_particles
 
 OBJS= loadhdf5.o
 

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-folder="/proj/shuiyao/"
-# modelname="l25n144-phew-m4kh100fs10"
+folder="/nas/astro-th-nas/shuiyao/"
 modelname=$1
 redshift=$2
 
@@ -10,8 +9,8 @@ if [ ! $modelname ]; then
     exit
 fi
 if [ ! $redshift ]; then
-    echo "Use default redshift = 1.0"
-    redshift="1.0"
+    echo "Use default redshift = 0.25"
+    redshift="0.25"
 fi
 if [[ $redshift == "1.0" ]]; then
     snapstr="078"
@@ -29,9 +28,24 @@ snap=$fbase"snapshot_"$snapstr
 
 echo $snap
 
-./get_particles -phew -sph $snap
-./rhot $fbase"snapshot" z0 $snapnum 40 40
-mv mrhot_phew_z0_$snapstr /scratch/shuiyao/sci/PHEW_TEST/$modelname/
-./rhot $fbase"snapshot" z0 $snapnum
-mv mrhot_phew_z0_$snapstr /scratch/shuiyao/sci/PHEW_TEST/$modelname/mrhot_z0_$snapstr
+./get_particles -phew $snap
+
+# Output:
+# $datadir/$model/snapshot_???.phews
+# idx rhoc LogTc rhoa LogTa fc fw LastSFTime
+
+./rhot $fbase"snapshot" $snapnum
+mv mrhot_phew_$snapstr /home/shuiyao_umass_edu/sci/phew-py/data/$modelname/
+
+# Output:
+# ncells_x, ncells_y
+# xnodes
+# ynodes
+# number_of_particles total_mass wind_mass
+
+# The default grid size is 256 x 256
+# Although we can have a smaller grid, e.g., 40 x 40
+# ./rhot $fbase"snapshot" z0 $snapnum 40 40
+
+
 # gdb --args ./loadhdf5 $snap

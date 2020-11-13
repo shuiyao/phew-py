@@ -16,13 +16,14 @@ NSKIP = 1
 import config_mpl
 
 # model = "l25n144-phew-m5kh100fs10"
-model = "l25n144-phew-norecouple"
-filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
-fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"
+# model = "l25n144-phew-norecouple"
+model = "l50n288-phew-m5"
+filename = "/nas/astro-th-nas/shuiyao/"+model+"/WINDS/z1/sorted.phews"
+fphewsname = "/home/shuiyao_umass_edu/scidata/phew/"+model+"/phewsinfo.z1"
 
 def select_particles(PhEWParticles, ntot=60, mmin=11.0, mmax=13.5):
     selected = []
-    nbins = ntot / 2
+    nbins = (int)(ntot / 2)
     mbins = [0] * nbins
     dm = (mmax - mmin) / (float)(nbins)
     for i, PhEWP in enumerate(PhEWParticles):
@@ -61,7 +62,7 @@ def remove_spurious_particles(track):
 def get_initwinds_and_rejoin_info(PhEWParticles, filename):
     # Note: some particles has HID = 0;
     # Their halo properties are from the last line of sovcirc. (Rvir < 0)
-    tab = genfromtxt(filename, names=True, dtype=('f8,f8,f8,f8,f8,f8,i8,f8,f8,f8,i8'))
+    tab = genfromtxt(filename, names=True, dtype=('f8,f8,f8,f8,f8,f8,f8,i8,f8,f8,f8,i8'))
     key_to_idx = dict()
     for i in range(len(tab)):
         if(tab[i]['Rvir'] > 0): key_to_idx[tab[i]['PhEWKey']] = i
@@ -132,9 +133,9 @@ fig = plt.figure(1, figsize=(6,7))
 ax = fig.add_subplot(111)
 # draw(pparts, ax, "T_a", nskip=10, logcscale=True, color_selection=True, color_min=2.e4, color_max=1.e7, alpha=0.3)
 
-parts_to_show = select_particles(pparts)
+parts_to_show = select_particles(pparts, ntot=60)
 draw(parts_to_show, ax, "Mvir", nskip=NSKIP, step=1, logcscale=False, color_selection=True, color_min=11.0, color_max=13.0, alpha=0.5, cmap=CMAP)
-plt.text(0.4, 0.1, model, fontsize=12, transform = ax.transAxes)
+plt.text(0.6, 0.05, model, fontsize=12, transform = ax.transAxes)
 
 fig.subplots_adjust(top=0.9, bottom=0.25)
 axcbar = fig.add_axes([0.15,0.13,0.7,0.015])
@@ -144,14 +145,14 @@ cdcbar.set_ticks([11, 11.5, 12, 12.5, 13])
 cdcbar.set_ticklabels(["11","11.5","12","12.5","13"])
 cdcbar.set_label("Mvir")
 
-print counter_spurious_particles
+print (counter_spurious_particles)
 ax.set_xlim(0.0, 20.0)
 ax.set_ylim(0.0, 1.0)
-ax.plot([1.0, 1.0], [0.0, 1.0], "k:") # vertical line
-ax.plot([0.0, 20.0], [0.05, 0.05], "k:")
+ax.plot([1.2, 1.2], [0.0, 1.0], "k:") # vertical line
+ax.plot([0.0, 20.0], [0.1, 0.1], "k:")
 # ax.set_ylim(1.e-3, 2.0)
 # ax.set_yscale("log")
 ax.set_xlabel(r"$\mathcal{M}$")
 ax.set_ylabel(r"$M_c/M_c(0)$")
-plt.savefig('/scratch/shuiyao/figures/tmp.pdf')
+plt.savefig('/home/shuiyao_umass_edu/figures/tmp.pdf')
 plt.show()

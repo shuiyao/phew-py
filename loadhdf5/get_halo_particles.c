@@ -47,8 +47,8 @@ int main(int argc, char **argv){
   fprintf(stdout, "LBox = %e, Unit_M = %e\n",
 	  lbox, mass_unit);
 
-  strcat(strcpy(base_name, "/proj/shuiyao/"), modelname);
-  strcat(strcpy(skid_base_name, "/proj/shuiyao/"), modelname);
+  strcat(strcpy(base_name, "/nas/astro-th-nas/shuiyao/"), modelname);
+  strcat(strcpy(skid_base_name, "/nas/astro-th-nas/shuiyao/"), modelname);
   get_snap_string(snapnum, snapstr);  
   
   strcpy(skid_base_name, base_name);
@@ -94,9 +94,9 @@ void get_halo_particles(){
   for(i=0;i<soheader.nstar;i++){ /* Convert Msub to log(msolar) */
     if(sohalos[i].mass > 0) sohalos[i].mass = log10(sohalos[i].mass * mass_unit / HUBBLEPARAM) + 10.;
   }
-  sprintf(outm11, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gas.mh11", modelname, modelname, snapstr);
-  sprintf(outm12, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gas.mh12", modelname, modelname, snapstr);
-  sprintf(outm13, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gas.mh13", modelname, modelname, snapstr);    
+  sprintf(outm11, "/home/shuiyao_umass_edu/scidata/%s/snapshot_%s.gas.mh11", modelname, snapstr);
+  sprintf(outm12, "/home/shuiyao_umass_edu/scidata/%s/snapshot_%s.gas.mh12", modelname, snapstr);
+  sprintf(outm13, "/home/shuiyao_umass_edu/scidata/%s/snapshot_%s.gas.mh13", modelname, snapstr);    
   foutm11 = fopen(outm11, "w");
   foutm12 = fopen(outm12, "w");
   foutm13 = fopen(outm13, "w");
@@ -108,9 +108,9 @@ void get_halo_particles(){
   char outm11aux[MAX_LEN_FILENAME];
   char outm12aux[MAX_LEN_FILENAME];
   char outm13aux[MAX_LEN_FILENAME];
-  sprintf(outm11aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh11", modelname, modelname, snapstr);
-  sprintf(outm12aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh12", modelname, modelname, snapstr);
-  sprintf(outm13aux, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.gasaux.mh13", modelname, modelname, snapstr);    
+  sprintf(outm11aux, "/home/shuiyao_umass_edu/scidata/%s/%s_%s.gasaux.mh11", modelname, modelname, snapstr);
+  sprintf(outm12aux, "/home/shuiyao_umass_edu/scidata/%s/%s_%s.gasaux.mh12", modelname, modelname, snapstr);
+  sprintf(outm13aux, "/home/shuiyao_umass_edu/scidata/%s/%s_%s.gasaux.mh13", modelname, modelname, snapstr);    
   foutm11aux = fopen(outm11aux, "w");
   foutm12aux = fopen(outm12aux, "w");
   foutm13aux = fopen(outm13aux, "w");
@@ -138,7 +138,7 @@ void get_halo_particles(){
       logT *= GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight;
       logT = log10(logT);
 
-      SfFlag = (P[i].Sfr > 0) ? 1 : 0;
+      SfFlag = (P[i].Sfr > 0 && P[i].Mcloud <= 0) ? 1 : 0;
 	
 #ifdef PHEW_EXTRA_OUTPUT      
       sprintf(printline, "%8d %5d %5d %7.5e %7.5e %7.5f %7.5f %7.5e %5.3f %2d %7.2f %7.3f\n",

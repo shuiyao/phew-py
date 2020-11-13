@@ -24,6 +24,7 @@
 #define HALFBOX 0.5
 #define UNIT_M_L25 433697.735404
 #define UNIT_M_L50 3469581.88
+#define FOLDER_SIMDATA "/nas/astro-th-nas/shuiyao/"
 
 /* char grpname[MAX_LEN_FILENAME]; */
 /* char sogrpname[MAX_LEN_FILENAME]; */
@@ -53,8 +54,8 @@ void main(int argc, char **argv)
   
   /* strcat(strcpy(basename, "/scratch/shuiyao/data/"), modelname); */
   /* strcat(strcpy(skidbasename, "/scratch/shuiyao/data/"), modelname); */
-  strcat(strcpy(basename, "/proj/shuiyao/"), modelname);
-  strcat(strcpy(skidbasename, "/proj/shuiyao/"), modelname);
+  strcat(strcpy(basename, FOLDER_SIMDATA), modelname);
+  strcat(strcpy(skidbasename, FOLDER_SIMDATA), modelname);
   get_snap_string(snapnum, snapstr);
   /* sprintf(binname, "%s/snap_p50n288gw_%s.bin", basename, snapstr); */
   /* sprintf(auxname, "%s/snap_p50n288gw_%s.aux", basename, snapstr); */
@@ -86,7 +87,7 @@ void main(int argc, char **argv)
 
   if(flag_allstars){
     ioffset_star = theader.nsph + theader.ndark;
-    sprintf(outname, "/scratch/shuiyao/scidata/gadget3io/%s/%s_%s.stars", modelname, modelname, snapstr);
+    sprintf(outname, "/home/shuiyao_umass_edu/scidata/%s/%s_%s.stars", modelname, modelname, snapstr);
     fprintf(stdout, "Writing file: %s\n", outname);
     fout = fopen(outname, "w");
     fprintf(fout, "#Idx ID GID HID Mass Tmax Age\n");

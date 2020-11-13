@@ -24,34 +24,23 @@ if [ ! $lbox ]; then
     exit
 fi
 
-mkdir /scratch/shuiyao/scidata/gadget3io/$modelname
+if [ ! -e /home/shuiyao_umass_edu/scidata/$modelname ]; then
+    mkdir /home/shuiyao_umass_edu/scidata/$modelname    
+fi
 
 # ./allstars $modelname 78 $lbox all
 # python allstars.py $modelname 078 $lbox $flag
-#./allstars $modelname 98 $lbox all
-python allstars.py $modelname 098 $lbox $flag
+# ./allstars $modelname 108 $lbox all
+python allstars.py $modelname 108 $lbox $flag
 
 #./allstars $modelname 98 $lbox all
 #python allstars.py $modelname 098 $lbox $flag
-
-# ./allstars $modelname 108
-# python stars_by_mvir_gizmo.py $modelname 108 mh11 $flag
-# python stars_by_mvir_gizmo.py $modelname 108 mh12 $flag
-# python stars_by_mvir_gizmo.py $modelname 108 mh13 $flag
-# python stars_by_mvir_gadget3.py $modelname 108 mh11 $flag
-# python stars_by_mvir_gadget3.py $modelname 108 mh12 $flag
-# python stars_by_mvir_gadget3.py $modelname 108 mh13 $flag
-# python allstars.py $modelname 058
-
 
 # Notes:
 # ---
 # allstars:
 #   - Select haloes according to their Msub (from .sogtp)
 #   - Returns: All stars selected and their properties
-# stars_by_mvir_gizmo.py
-#   - Combine output above with SFRINFO
-#   - 
 # starinfo_selected_by_....py
 #   - load_central_stars() will select only stars from the centrals
 #   - find_total_mass() will add up Msub of all stars selected

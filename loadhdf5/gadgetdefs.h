@@ -1,3 +1,6 @@
+#ifndef _GADGETDEFS_H
+#define _GADGETDEFS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,5 +68,6 @@ struct gadget_dump
   char     fill[32];  /* fills to 256 Bytes */
 } ;
 
-struct gadget_dump gheader ;
+extern struct gadget_dump gheader ;
 
+#endif

@@ -8,10 +8,10 @@ import os
 
 # x is perpendicular to the wind
 
-PROJ = "perpendicular"
+# PROJ = "perpendicular"
 PROJ = "parallel"
 
-fbase = "/scratch/shuiyao/Jneil/column_density/"
+fbase = "/home/shuiyao_umass_edu/scidata/Jneil/column_density/"
 # model = "LowCond_v1700_chi300_cond"
 # modelstr = "x300v1700lc"
 # model = "T0.3_v1700_chi300_cond"
@@ -20,8 +20,8 @@ fbase = "/scratch/shuiyao/Jneil/column_density/"
 # modelstr = "x300v1700"
 # model = "T1_v1700_chi1000_cond"
 # modelstr = "x1000v1700c"
-model = "otherBackgrounds/T0.3_v1700_chi300_cond_0-1"
-modelstr = "x300v1700cUV01"
+model = "otherBackgrounds/T0.3_v1700_chi300_cond_100"
+modelstr = "x300v1700cUV100"
 
 fnamex = fbase + model + "_x.csv"
 fnamey = fbase + model + "_y.csv"
@@ -53,7 +53,8 @@ clrs = ["blue", "cyan", "lime", "green", "plum", "orange", "red", "steelblue", "
 lgds = ["HI","HeII(N/A)","CIII","CIV","OIV(N/A)","OVI","NeVIII","MgII","SiIV"]
 ions = ["HI","HeII","CIII","CIV","OIV","OVI","NeVIII","MgII","SiIV"]
 
-cols = range(21, 31)
+# cols = range(21, 31)
+cols = range(1, 11)
 
 # 0  1    2    3   4   5   6      7    8
 # HI HeII CIII CIV OIV OVI NeVIII MgII SiIV
@@ -68,7 +69,7 @@ def generate_pdf_tables():
     tabout = []
     if(PROJ == "perpendicular"):
         ioncds = ioformat.rcol(fnamex, cols, separator=",", linestart=1)
-        foutname = "pdfs/"+modelstr+"_i9_pdf.dat"
+        foutname = "pdfs/"+modelstr+"_i9_x_pdf.dat"
     else:
         ioncds = ioformat.rcol(fnamey, cols, separator=",", linestart=1)
         foutname = "pdfs/"+modelstr+"_i9_y_pdf.dat"
@@ -77,12 +78,12 @@ def generate_pdf_tables():
         idx = ionidxs[i] 
         if(idx == -1):
             tabout.append(array([0.0] * (NCELLS+1)))
-            print "---"
+            print ("---")
             continue
         ionname = ionnames[idx]
-        print ionname
+        print (ionname)
         ioncds[idx-1].sort()
-        prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::NPIXLIM/NCELLS][:NCELLS+1])
+        prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::(int)(NPIXLIM/NCELLS)][:NCELLS+1])
         tabout.append(prob)
 
     fout = open(foutname, "w")
@@ -136,4 +137,4 @@ def draw():
     plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
     plt.show()
 
-print "done"
+print ("done")

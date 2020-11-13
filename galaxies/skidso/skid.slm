@@ -1,0 +1,10 @@
+#!/bin/bash -f
+
+#SBATCH -p ib
+#SBATCH -J SKIDALL
+#SBATCH --nodes=1
+#SBATCH -o ./out-%j-%N
+#SBATCH -e ./err-%j-%N
+#SBATCH --time=72:00:00
+
+bash skid_all_l25n144.sh
