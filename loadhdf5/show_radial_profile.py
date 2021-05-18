@@ -1,5 +1,5 @@
-from mymod import *
-from numpy import genfromtxt
+from myinit import *
+import matplotlib.pyplot as plt
 
 hparam = 0.7
 unit_m = 1.e10 / hparam
@@ -12,10 +12,6 @@ ZSOLAR = log10(0.0122)
 
 #MODE = "Metal"
 MODE = "Mass"
-#SUB_MODE = "Tmax"
-SUB_MODE = "logT"
-RENEW = False
-
 
 def find_radial_bin(r):
     if(r > 1.0): return -1
@@ -23,24 +19,14 @@ def find_radial_bin(r):
     return (int)(bin_idx)
 
 # ---- GIZMO Vs. PhEW
-# models = ["l50n288-phewoff", "l50n288-phew-m5"]
-# lgds = ["l50n288-phewoff", "l50n288-phew-m5"]
-# ---- Mc=1.e4 Vs. Mc=1.e5
-# models = ["l50n288-phew-m4", "l50n288-phew-m5"]
-# lgds = ["l50n288-phew-m4", "l50n288-phew-m5"]
-# ---- 25/288 Vs. 50/288 (PhEW)
-# models = ["l50n288-phew-m5", "l25n288-phew-m5"]
-# lgds = ["l50n288-phew-m5", "l25n288-phew-m5"]
-# ---- 25/288 Vs. 50/288 (GIZMO)
-# models = ["l50n288-phewoff", "l25n288-phewoff-fw"]
-# lgds = ["l50n288-phewoff", "l25n288-phewoff-fw"]
-# ---- 25/144 Vs. 25/288 (PhEW)
-# models = ["l25n144-phew-m5", "l25n288-phew-m5"]
-# lgds = ["PhEW,25/144", "PhEW,25/288"]
-models = ["l25n288-phew-m5", "l25n288-phew-m5-spl"]
-lgds = ["PhEW,25/288", "PhEW,25/288,Split"]
-lstyles = ["--", "-"]
+# models = ["l50n576-phew-m5", "l25n288-phew-m5", "l50n288-phew-m5"]
+# lgds = ["l50n576-phew-m5", "l25n288-phew-m5", "l50n288-phew-m5"]
+# lstyles = ["-", "--", ":"]
+models = ["l50n288-phewoff", "l50n576-phew-m5"]
+lgds = ["l50n288-phewoff", "l50n576-phew-m5"]
+lstyles = [":", "-"]
 REDSHIFT = 0.25
+# REDSHIFT = 1.0
 if(REDSHIFT == 0.0): zstr = "108"
 if(REDSHIFT == 0.25): zstr = "098"
 if(REDSHIFT == 1.0): zstr = "078"
@@ -49,20 +35,22 @@ if(REDSHIFT == 4.0): zstr = "033"
 
 from pltastro import frame, draw
 import config_mpl
-frm = frame.multi(3,1)
+frm = frame.multi(3,2)
 pars = frm.params
-pars.figsize = (5, 9)
-pars.left = 0.2
+pars.figsize = (10, 9)
+pars.left = 0.1
+pars.right = 0.9
 pars.top = 0.92
-pars.bottom = 0.2
+pars.wspace = 0.3
+pars.bottom = 0.15
 panels = frm.panels
 panels.set_xlabels(r"$R/R_\mathrm{vir}$")
 panels.set_ylabels("")
 # panels.ylabels[1] = "Mass [arbitrary units]"
-if(MODE == "Mass"):
-    panels.ylabels[1] = "Mass Fraction"
-if(MODE == "Metal"):
-    panels.ylabels[1] = r"$\log(Z/Z_\odot)$"
+panels.ylabels[2] = "Mass Fraction"
+# panels.ylabels[3] = r"$\log(Z/Z_\odot)$"
+panels.ylabels[3] = "Wind Mass Fraction"
+panels.yticksON = [True] * 6
 
 fig, axs = draw(frm)
 
@@ -72,180 +60,101 @@ captions = [
     r"$12.85 < M_\mathrm{vir} < 13.15$"\    
 ]
 
-if(MODE == "Mass"):
-    for modeli in range(len(models)):
-        for mi, mstr in enumerate(["mh11", "mh12", "mh13"]):
-            fname = "/scratch/shuiyao/scidata/gadget3io/"+models[modeli]+"/"+models[modeli]+"_"+zstr+".gas." + mstr
-            foutname = "/scratch/shuiyao/scidata/gadget3io/"+models[modeli]+"/"+models[modeli]+"_"+zstr+".mprof." + mstr
+for modeli in range(len(models)):
+    for mi, mstr in enumerate(["mh11", "mh12", "mh13"]):
+        foutname = DIRS['SCIDATA'] + models[modeli] + "/gasprof_"+zstr+"_"+mstr
+        print ("Plotting: "+ foutname)
 
-            print "Doing: ", fname
+        tab = genfromtxt(foutname, names=True)
+        mass = tab['Mass']
+        mwind = tab['Mwind']
+        mwcold = tab['Mwcold']
+        mwhot = tab['Mwhot']
+        mcold = tab['Mcold']
+        mhot = tab['Mhot']
+        mism = tab['Mism']
+        mmaxhot = tab['Mmaxhot']
+        mmaxcold = tab['Mmaxcold']
+        mmaxwhot = tab['Mmaxwhot']
+        mmaxwcold = tab['Mmaxwcold']
+        mzcold = tab['Mzcold']
+        mzhot = tab['Mzhot']
+        mzism = tab['Mzism']
+        mzwind = tab['Mzwind']
+        mz = mzcold + mzhot + mzism + mzwind
 
-            if(os.path.exists(foutname) and RENEW == False):
-                print "Existing Mass Profile File."
-                tab = genfromtxt(foutname, names=True)
-                mass = tab['Mass']
-                mwind = tab['Mwind']
-                mwcold = tab['Mwcold']
-                mwhot = tab['Mwhot']
-                mcold = tab['Mcold']
-                mhot = tab['Mhot']
-                mism = tab['Mism']
-                mmaxhot = tab['Mmaxhot']
-                mmaxcold = tab['Mmaxcold']
-                mmaxwhot = tab['Mmaxwhot']
-                mmaxwcold = tab['Mmaxwcold']                
-            else:
-                print "Generating New Mass Profile File."
-                tab = genfromtxt(fname, names=True)
+        # logT based
+        # axs[2*mi].plot(redges, mass/mass, color="black", linestyle=lstyles[modeli])
+        axs[2*mi].plot(redges, (mcold+mwcold)/mass, color="blue", linestyle=lstyles[modeli])
+        axs[2*mi].plot(redges, (mhot+mwhot)/mass, color="red", linestyle=lstyles[modeli])
+        axs[2*mi].plot(redges, mism/mass, color="brown", linestyle=lstyles[modeli])
+        axs[2*mi].set_ylim(0.0, 1.0)
+        axs[2*mi].set_yticks([0.0, 0.2, 0.4, 0.6, 0.8])
 
-                mass = array([0.0] * (nbins + 1))
-                mwind = array([0.0] * (nbins + 1))
-                mmix = array([0.0] * (nbins + 1))
-                mwcold = array([0.0] * (nbins + 1))
-                mwhot = array([0.0] * (nbins + 1))                
-                mcold = array([0.0] * (nbins + 1))
-                mhot = array([0.0] * (nbins + 1))
-                mism = array([0.0] * (nbins + 1))
-                mmaxhot = array([0.0] * (nbins + 1))
-                mmaxcold = array([0.0] * (nbins + 1))
-                mmaxwhot = array([0.0] * (nbins + 1))
-                mmaxwcold = array([0.0] * (nbins + 1))                
+        # Tmax Based
+        # axs[2*mi+1].plot(redges, mmaxcold/mass, color="blue", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, mmaxhot/mass, color="red", linestyle=lstyles[modeli])
+        # axs[mi].plot(redges, mmaxwcold/mass, color="cyan", linestyle=lstyles[modeli])
+        # axs[mi].plot(redges, mmaxwhot/mass, color="magenta", linestyle=lstyles[modeli])
 
-                for i in range(len(tab)):
-                    part = tab[i]
-                    bidx = find_radial_bin(part['dr'] / part['Rvir'])
-                    mass[bidx] += part['Mass'] # Total Mass
-                    mmix[bidx] += part['WMass'] # Total Mixed Mass
-                    if(part['SfFlag'] == 1):
-                        mism[bidx] += part['Mass']
-                    else:
-                        if(part['Mc'] > 0): # A PhEW Particle
-                            mwind[bidx] += part['Mass']
-                            mmix[bidx] -= part['WMass']
-                        if(part['Mc'] == 0): # A normal gas particle
-                            if(part['logT'] > 5.5):
-                                mhot[bidx] += part['Mass'] - part['WMass']
-                                mwhot[bidx] += part['WMass']
-                            else:
-                                mcold[bidx] += part['Mass'] - part['WMass']
-                                mwcold[bidx] += part['WMass']
-                            if(part['Tmax'] > 5.5):
-                                mmaxhot[bidx] += part['Mass'] - part['WMass']
-                                mmaxwhot[bidx] += part['WMass']
-                            else:
-                                mmaxcold[bidx] += part['Mass'] - part['WMass']
-                                mmaxwcold[bidx] += part['WMass']
-                        if(part['Mc'] < 0): # Tricky, now very rare
-                            mwind[bidx] += part['Mass'] - part['WMass']
-                fwind = mwind/mass
-                fout = open(foutname, "w")
-                fout.write("#r Mass Mcold Mhot Mwind Mwcold Mwhot Mism Mmaxcold Mmaxhot Mmaxwcold Mmaxwhot\n")
-                for i in range(len(redges)):
-                    line = "%5.3f %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e %5.3e\n" % \
-                           (redges[i], mass[i], mcold[i], mhot[i], mwind[i], mwcold[i], mwhot[i], mism[i], mmaxcold[i], mmaxhot[i], mmaxwcold[i], mmaxwhot[i])
-                    fout.write(line)
-                fout.close()
+        # axs[2*mi+1].plot(redges, (mwhot+mwcold+mwind)/mass, color="orange", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, mwcold/mass, color="cyan", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, mwhot/mass, color="magenta", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, mwind/mass, color="green", linestyle=lstyles[modeli])
+        # axs[2*mi+1].set_ylim(0.0, 1.0)
+        # axs[2*mi+1].set_yticks([0.0, 0.2, 0.4, 0.6, 0.8])
 
-            axs[mi].plot(redges, mass/mass, color="black", linestyle=lstyles[modeli])
-            if(SUB_MODE == "logT"):
-                axs[mi].plot(redges, mcold/mass, color="blue", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mhot/mass, color="red", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mwcold/mass, color="cyan", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mwhot/mass, color="magenta", linestyle=lstyles[modeli])
-            if(SUB_MODE == "Tmax"):
-                axs[mi].plot(redges, mmaxcold/mass, color="blue", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mmaxhot/mass, color="red", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mmaxwcold/mass, color="cyan", linestyle=lstyles[modeli])
-                axs[mi].plot(redges, mmaxwhot/mass, color="magenta", linestyle=lstyles[modeli])
-            axs[mi].plot(redges, mwind/mass, color="green", linestyle=lstyles[modeli])
-            axs[mi].plot(redges, mism/mass, color="brown", linestyle=lstyles[modeli])            
-            axs[mi].text(0.01, 0.8, captions[mi], transform=axs[mi].transAxes, fontsize=12)
-    axs[0].set_title("Radial Profiles, z="+str(REDSHIFT)[:3])
+        # Z
+        if(models[modeli] == "l50n288-phewoff"):
+            ZWIND = log10(mzwind / (mwcold + mwhot))
+        else:
+            ZWIND = log10(mzwind / mwind)
+        axs[2*mi+1].plot(redges, log10(mz/mass)-ZSOLAR, color="black", linestyle=lstyles[modeli])        
+        axs[2*mi+1].plot(redges, log10(mzcold/(mcold+mwcold))-ZSOLAR, color="blue", linestyle=lstyles[modeli])
+        axs[2*mi+1].plot(redges, log10(mzhot/(mhot+mwhot))-ZSOLAR, color="red", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, log10(mzism/mism)-ZSOLAR, color="brown", linestyle=lstyles[modeli])
+        # axs[2*mi+1].plot(redges, ZWIND-ZSOLAR, color="green", linestyle=lstyles[modeli])
+        axs[2*mi+1].set_ylim(-1.5, 0.5)
+        axs[2*mi+1].set_yticks([-1.5, -1.0, -0.5, 0.0])
+
+        # Text
+        axs[2*mi+1].text(0.05, 0.85, captions[mi], transform=axs[2*mi+1].transAxes, fontsize=12)
+
+            
+    axs[0].set_title("Mass Profiles, z="+str(REDSHIFT)[:3])
+
+    # axs[1].set_title("Wind Profiles, z="+str(REDSHIFT)[:3])
+    axs[1].set_title("Metal Profiles, z="+str(REDSHIFT)[:3])    
 
     from pltastro import legend
     lgd1 = legend.legend(axs[0])
     lgd1.loc = "upper right"
-    lgd1.addLine((lgds[0], "black", lstyles[0], 1))
-    lgd1.addLine((lgds[1], "black", lstyles[1], 1))
+    for i in range(len(lgds)):
+        lgd1.addLine((lgds[i], "black", lstyles[i], 1))
     lgd1.draw()
-    lgd2 = legend.legend(axs[2])
+    lgd2 = legend.legend(axs[4])
     lgd2.loc = "upper right"
     lgd2.addLine(("cold", "blue", "-", 1))
     lgd2.addLine(("hot", "red", "-", 1))
-    lgd2.addLine(("cold wind", "cyan", "-", 1))
-    lgd2.addLine(("hot wind", "magenta", "-", 1))
-    lgd2.addLine(("PhEW", "green", "-", 1))    
-    lgd2.addLine(("all wind", "orange", "-", 1))        
+    lgd2.addLine(("ISM", "brown", "-", 1))        
     lgd2.draw()
+    # lgd3 = legend.legend(axs[5])
+    # lgd3.loc = "upper right"
+    # lgd3.addLine(("all wind", "orange", "-", 1))        
+    # lgd3.addLine(("PhEW", "green", "-", 1))
+    # lgd3.addLine(("cold wind", "cyan", "-", 1))
+    # lgd3.addLine(("hot wind", "magenta", "-", 1))
+    # lgd3.draw()
 
+    lgd3 = legend.legend(axs[5])
+    lgd3.loc = "upper right"
+    lgd3.addLine(("Averaged", "black", "-", 1))        
+    lgd3.addLine(("cold metals", "blue", "-", 1))
+    lgd3.addLine(("hot metals", "red", "-", 1))
+    # lgd3.addLine(("wind metals", "green", "-", 1))
+    lgd3.draw()
 
-# ---------------- METAL ----------------
-if(MODE == "Metal"):
-    for modeli in range(len(models)):
-        for mi, mstr in enumerate(["mh11", "mh12", "mh13"]):
-            fname = "/scratch/shuiyao/scidata/gadget3io/"+models[modeli]+"/"+models[modeli]+"_"+zstr+".gas." + mstr
-            print "Doing: ", fname
-            # if(modeli == 1 or mi == 1): break;
-
-            tab = genfromtxt(fname, names=True)
-
-            mass = array([0.0] * (nbins + 1))
-            mz = array([0.0] * (nbins + 1))
-            m = array([0.0] * (nbins + 1))
-            mzcold = array([0.0] * (nbins + 1))
-            mzhot = array([0.0] * (nbins + 1))                
-
-            for i in range(len(tab)):
-                part = tab[i]
-                bidx = find_radial_bin(part['dr'] / part['Rvir'])
-                mass[bidx] += part['Mass'] # Total Mass
-                mass_z = part['Mass'] * part['Z'] # Total Metal Mass
-                mz[bidx] += mass_z
-                if(part['logT'] > 5.5):
-                    mzhot[bidx] += mass_z
-                else:
-                    mzcold[bidx] += mass_z
-
-            axs[mi].plot(redges, log10(mz/mass)-ZSOLAR, color="black", linestyle=lstyles[modeli])
-            axs[mi].plot(redges, log10(mzcold/mass)-ZSOLAR, color="blue", linestyle=lstyles[modeli])
-            axs[mi].plot(redges, log10(mzhot/mass)-ZSOLAR, color="red", linestyle=lstyles[modeli])
-            axs[mi].text(0.50, 0.8, captions[mi], transform=axs[mi].transAxes, fontsize=12)
-    axs[0].set_title("Radial Profiles, z="+str(REDSHIFT)[:3])
-    for i in range(3):
-        axs[i].set_ylim(-2.0, 0.5)
-        axs[i].set_yticks([-2.0, -1.5, -1.0, -0.5, 0.0])
-
-    from pltastro import legend
-    lgd = legend.legend(axs[2])
-    lgd.loc = "lower right"
-    lgd.addLine((lgds[0], "black", lstyles[0], 1))
-    lgd.addLine((lgds[1], "black", lstyles[1], 1))
-    lgd.draw()
-
-# ---------------- G3-WIND ----------------
-
-# for mi, mstr in enumerate(["mh11", "mh12", "mh13"]):
-#     fname = "/scratch/shuiyao/scidata/gadget3io/"+models[1]+"/"+models[1]+"_078.gas." + mstr    
-
-#     tab = genfromtxt(fname, names=True)
-
-#     mass = array([0.0] * (nbins + 1))
-#     mwind = array([0.0] * (nbins + 1))
-#     mmix = array([0.0] * (nbins + 1))
-
-#     for i in range(len(tab)):
-#         part = tab[i]
-#         bidx = find_radial_bin(part['dr'] / part['Rvir'])
-#         mass[bidx] += part['Mass']
-#         if(part['Mc'] < 0):            
-#             mwind[bidx] += part['Mass']
-#     fwind = mwind/mass
-
-#     axs[mi].plot(redges, mass/mass, "k--")
-#     axs[mi].plot(redges, mwind/mass, "g--")
-#     # axs[mi].text(0.2, 0.8, captions[mi], transform=axs[mi].transAxes, fontsize=16)
-
-plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+plt.savefig(DIRS['FIGURE']+"tmp.pdf")
 plt.show()
 
-print "Done."
+print ("Done.")

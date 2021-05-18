@@ -1,3 +1,4 @@
+from myinit import *
 import ioformat
 import matplotlib.pyplot as plt
 import bin1d
@@ -12,41 +13,17 @@ mpl.rcParams['axes.labelsize'] = "large"
 
 PLOT_MASS_RATIO = True
 
-# SHOW_MODEL_LIST = [1, 3, 13, 14]
-# SHOW_MODEL_LIST = [1, 3, 10, 11, 13, 14] # sw
-
-# SPH method. PhEWOff x PhEW
-# SHOW_MODEL_LIST = [3, 7, 6, 18]
-
 # PHEWs
 # SHOW_MODEL_LIST = [6, 19]
-#SHOW_MODEL_LIST = [1, 2, 3, 4, 5, 6]
-SHOW_MODEL_LIST = [6, 13, 14]
+SHOW_MODEL_LIST = [0, 1, 4, 8]
 
-zstr = ["036", "005", "003", "001"]
 zstr2 = ["108", "078", "058", "033"]
 zs = [0.0, 1.0, 2.0, 4.0]
 
-fbase = "/scratch/shuiyao/sci/PHEW_TEST/"
+fbase = DIRS['SCIDATA']
 FILLED = False
-#HALOMASS_CORRECTION = True
-#modelname = "l25n144-phewoff"
-#modelname = "l25n144-gizmo-mufasa"
-#modelname = "l25n144-mufasa"
 
-HALOMASS_CORRECTION = True
-# modelname = "l25n144-phewoff-nozload"
-# modelname = "l25n144-gizmo-mufasa"
-modelname = "l25n144-mufasa"
-
-midx, models, clrs, lgds = loadtxt("models.dat", unpack=True, dtype='i8, S30, S20, S30')
-
-flist = [\
-          fbase + modelname + "/" + "smhm_" + zstr2[0]+".txt",
-          fbase + modelname + "/" + "smhm_" + zstr2[1]+".txt",
-          fbase + modelname + "/" + "smhm_" + zstr2[2]+".txt",
-          fbase + modelname + "/" + "smhm_" + zstr2[3]+".txt"          
-         ]
+midx, models, clrs, lgds = loadtxt("models.dat", unpack=True, dtype='i8, U30, U20, U30')
 
 MLIM = 2.*5.8e9 # 128 Msph
 MLIM_PLOT = 2.9e9 # 32 Msph
@@ -152,6 +129,6 @@ lgd.loc="lower right"
 for mi in SHOW_MODEL_LIST:
     lgd.addLine((lgds[mi], clrs[mi], "-", 1))
 lgd.draw()
-# plt.savefig("smms.pdf")
-plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+
+plt.savefig(DIRS['FIGURE'] + "tmp.pdf")
 plt.show()

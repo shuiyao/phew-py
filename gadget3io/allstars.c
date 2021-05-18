@@ -24,7 +24,7 @@
 #define HALFBOX 0.5
 #define UNIT_M_L25 433697.735404
 #define UNIT_M_L50 3469581.88
-#define FOLDER_SIMDATA "/nas/astro-th-nas/shuiyao/"
+#define FOLDER_SIMDATA "/nas/astro-th/shuiyao/"
 
 /* char grpname[MAX_LEN_FILENAME]; */
 /* char sogrpname[MAX_LEN_FILENAME]; */

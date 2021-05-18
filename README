@@ -6,7 +6,7 @@ L25N144 TEST PROCEDURE:
         - If PhEW OFF. Change the flag.
     - $SCI/gadget3io/analyze/...
     - $SCI/phew/select/select.sh
-    - $SCI/phew/select/find_host_haloes_for_phews.py (Fetch Mvir, Msub, ...)
+    - $SCI/phew/loadhdf5/find_host_haloes_for_phews.py (Fetch Mvir, Msub, ...)
     - $SCI/phew/loadhdf5
 
 OUTPUT FILE FORMAT
@@ -47,12 +47,16 @@ Recycling Timescale: $SCI/newwind/
     - Not that important, supplementary
   - trecy.py Plot
 
-V25Vc: $SCI/newwind/
-  - select/pickout_l25.sh: get WINDS/z2/ and sfrinfo.z?
-  - select/select.sh: main code for selecting winds
-  - makeplots.sh calls l25n144.py:
-    - main function: write_wind_features()
-    - Data: $SCIDATA/$modelname/windsinfo.z? (The V25 file)
+V25Vc: $PHEW-PY/v25vc.py
+    [IN] filename_phews: sorted.phews under WINDS/z?/
+      |- select.sh
+    [IN] fphewsname: phewsinfo.z?
+      |- match_initwinds_rejoin.py
+         |- [IN] initwinds.sorted
+         |- [IN] rejoin.sorted
+         |- [IN] snapshot_???.phewsHalos
+            |- $PHEW-PY/loadhdf5/find_host_haloes_for_phews.py
+            |- [IN] .hdf5, .sogrp, .sovcirc
 
 Accretion: $SCI/phew/gadget3io/allstars.csh
 

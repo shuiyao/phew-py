@@ -9,21 +9,30 @@ mpl.rcParams["mathtext.default"] = "tt"
 mpl.rcParams["axes.labelsize"] = "large"
 CONTLEVELS = 15
 CONT_FLOOR = 1.e-4
-REDSHIFT = 0.2
+# REDSHIFT = 0.2
+# snapnum = 98
+REDSHIFT = 0.0
 snapnum = 98
+
 field = "LastSFTime"
 
 # Search "Paint PhEW Particles"
 
-fbase = "/nas/astro-th-nas/shuiyao/"
+fbase = "/nas/astro-th/shuiyao/"
 # modelname = "l50n288-phew-m5-spl"
 snapstr = ("000"+str(snapnum))[-3:]
 gridfile, fphewsname = [], []
-models = ["l25n288-phew-m5-spl", "l50n288-phew-m5-spl"]
+models = ["l25n288-phew-m5", "l50n576-phew-m5"]
+
+plot_single = True
+models = ["l50n576-phew-m5"]
+#models = ["l50n288-phewoff"]
+
 for model in models:
     gridfile.append("/home/shuiyao_umass_edu/sci/phew-py/data/"+model+"/"+"mrhot_phew_"+snapstr)
     folder = fbase + model + "/"
     fphewsname.append(folder + "snapshot_" + snapstr + ".phews")
+
 
 if(field == "f_cloud"):
     vmin, vmax = 0.0, 1.0
@@ -124,7 +133,6 @@ def draw_model(ax, gridfile, fphewsname, field="LastSFTime"):
     ax.set_ylim(ynodes[0], ynodes[-1])
     #    plt.axis([xnodes[0], xnodes[-1], ynodes[0], ynodes[-1]])
     ax.set_ylabel(r'$Log(T)$')
-    # plt.title("z = "+str(REDSHIFT), y=1.15)
     ax.text(-1.,7.5, "WHIM", color="green")
     ax.text(5.,7.5, "Hot", color="red")
     ax.text(0.,3.2, "Diffuse", color="purple")
@@ -166,7 +174,12 @@ def draw_model(ax, gridfile, fphewsname, field="LastSFTime"):
 
     update_ax2(ax)
 
-fig, axs = plt.subplots(1,2, figsize=(9,6))
+if(plot_single):
+    fig, _ = plt.subplots(1,1, figsize=(5,6))
+    axs = [plt.gca()]
+else:
+    fig, axs = plt.subplots(1,2, figsize=(9,6))
+    
 cmap = plt.get_cmap("jet")
 rhoth = log10(rho_thresh(REDSHIFT)+1.)
 print ("Density Thresh: ", rhoth)
@@ -174,6 +187,7 @@ fig.subplots_adjust(top=0.80, bottom=0.2, wspace=0.15, right=0.9)
 for i in range(len(gridfile)):
     print ("Model: ", gridfile[i])
     draw_model(axs[i], gridfile[i], fphewsname[i])
+    axs[i].set_title(models[i], y=1.15)
 
 logscale = False    
 axcbar = fig.add_axes([0.15,0.1,0.7,0.015])

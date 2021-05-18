@@ -15,7 +15,7 @@ popd
 
 pushd loadhdf5/
 #bash loadhdf5.sh $model 2.0
-bash loadhdf5.sh $model 1.0
+#bash loadhdf5.sh $model 1.0
 # bash loadhdf5.sh $model 0.2
 popd
 
@@ -23,8 +23,8 @@ popd
 # bash allstars.sh $model
 # popd
 
-if [ ! -e /scratch/shuiyao/scidata/newwind/$model ]; then
-    mkdir /scratch/shuiyao/scidata/newwind/$model    
+if [ ! -e /home/shuiyao_umass_edu/scidata/$model ]; then
+    mkdir /home/shuiyao_umass_edu/scidata/$model    
 fi
 #python match_initwinds_rejoin.py $model z2 058
 python match_initwinds_rejoin.py $model z1 078

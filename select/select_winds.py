@@ -5,7 +5,7 @@ import os
 
 errormsg = "Usage: "+sys.argv[0]+" ncpu redshift(0,1,2) $WINDS"
 if(len(sys.argv) != 4):
-    print errormsg
+    print (errormsg)
     sys.exit(1)
 else:
     NCPU = int(sys.argv[1])
@@ -18,6 +18,8 @@ else:
     if(NCPU == 128): # likely l25n144 
         amaxs = ["0.202", "0.335", "0.502", "0.835"]
     if(NCPU == 256): # likely l50n288 or l25n288
+        amaxs = ["0.201", "0.334333", "0.501", "0.834333"]
+    if(NCPU == 1024): # likely l50n288 or l25n288
         amaxs = ["0.201", "0.334333", "0.501", "0.834333"]    
     FBASE = sys.argv[3]
     if(REDSHIFT == 4.0):
@@ -29,24 +31,24 @@ else:
     elif(REDSHIFT == 0.2):
         AMIN, AMAX, odir = "0.833333", amaxs[3], FBASE+"z0/"
     else:
-        print errormsg
+        print (errormsg)
         sys.exit(1)
     if(os.path.exists(FBASE) == 0):
-        print errormsg
-        print "Error: ", FBASE, "not found. Exit."
+        print (errormsg)
+        print ("Error: ", FBASE, "not found. Exit.")
         sys.exit(1)
     if(os.path.exists(odir) == 0):    
         os.mkdir(odir)
-    print "Ncpu = ", NCPU
-    print "Redshift = ", REDSHIFT
-    print "amin, amax = ", AMIN, AMAX
-    print "Directory: ", odir
+    print ("Ncpu = ", NCPU)
+    print ("Redshift = ", REDSHIFT)
+    print ("amin, amax = ", AMIN, AMAX)
+    print ("Directory: ", odir)
 
 ids = []
 for icpu in range(NCPU):
     ifile = open(FBASE+"initwinds."+str(icpu), "r")
     ofile = open(odir+"initwinds."+str(icpu), "w")    
-    print "Doing File #", icpu
+    print ("Doing File #", icpu)
     for line in ifile:
         spt = line.split()
         if AMIN < spt[0] < AMAX:
@@ -55,7 +57,7 @@ for icpu in range(NCPU):
             ofile.write(line)
     ifile.close()
     ofile.close()
-print len(ids)," Wind Record Found!"
+print (len(ids)," Wind Record Found!")
 widfile = open(odir+"wid.dat", "w")
 for wid in ids:
     widfile.write(wid+"\n")

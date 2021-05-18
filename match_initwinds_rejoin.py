@@ -5,6 +5,9 @@ import phew
 import matplotlib.pyplot as plt
 import sys
 
+# Need to run loadhdf5/find_host_haloes_for_phews.py first to get .phewsHalos file
+
+
 # Plan:
 # Select winds first, match later.
 # VERSION 1.0:
@@ -23,9 +26,9 @@ import sys
 
 __all__ = ['load_tables', 'match_tables']
 
-errormsg = "Usage: "+sys.argv[0]+" ncpu redshift(0,1,2) modelname"
+errormsg = "Usage: "+sys.argv[0]+" modelname redshift(0,1,2) snapstr"
 if(len(sys.argv) != 4):
-    print errormsg
+    print(errormsg)
     sys.exit(1)
 else:
     MODEL = sys.argv[1]
@@ -37,18 +40,18 @@ else:
 # snapstr = "100"
 
 def load_tables():
-    print "Loading tables ... "
+    print ("Loading tables ... ")
     FieldsInit = phew.PhEWFields("fields_initwinds.dat")
-    filename = "/proj/shuiyao/"+MODEL+"/WINDS/"+zstr+"/initwinds.sorted"
-    info_fields = FieldsInit.get_field_info(["atime","Mass","Mstar","PhEWKey","T_a","Vinit"], verbose=True)
+    filename = "/nas/astro-th/shuiyao/"+MODEL+"/WINDS/"+zstr+"/initwinds.sorted"
+    info_fields = FieldsInit.get_field_info(["atime","Mass","Mstar","ID","T_a","Vinit"], verbose=True)
     tabinit = phew.read_phew_fields(filename, info_fields)
 
     FieldsRejoin = phew.PhEWFields("fields_rejoin.dat")
-    filename = "/proj/shuiyao/"+MODEL+"/WINDS/"+zstr+"/rejoin.sorted"
-    info_fields = FieldsRejoin.get_field_info(["atime","Vinit","PhEWKey","M_c","vrel", "cs_a", "rho_a","flag"], verbose=True)
+    filename = "/nas/astro-th/shuiyao/"+MODEL+"/WINDS/"+zstr+"/rejoin.sorted"
+    info_fields = FieldsRejoin.get_field_info(["atime","Vinit","ID","M_c","vrel", "cs_a", "rho_a","flag"], verbose=True)
     tabrejoin = phew.read_phew_fields(filename, info_fields)
 
-    filename = "/proj/shuiyao/"+MODEL+"/snapshot_"+snapstr+".phews"
+    filename = "/nas/astro-th/shuiyao/"+MODEL+"/snapshot_"+snapstr+".phewsHalos"
     tabhalo = genfromtxt(filename, names=True)
     return tabinit, tabrejoin, tabhalo
 
@@ -56,18 +59,18 @@ def match_tables(tabi, tabr, tabh, filename):
     key_to_idx_r = dict()
     key_to_idx_h = dict()
     for i in range(len(tabr)):
-        key_to_idx_r[tabr['PhEWKey'][i]] = i
+        key_to_idx_r[tabr['ID'][i]] = i
     for i in range(len(tabh)):
-        key_to_idx_h[tabh['PhEWKey'][i]] = i
-    print "Matching Tables: ..."
-    print "Launched: ", len(tabi)
-    print "Halo found: ", len(tabh)
-    print "Rejoined: ", len(tabr)
+        key_to_idx_h[tabh['ID'][i]] = i
+    print ("Matching Tables: ...")
+    print ("Launched: ", len(tabi))
+    print ("Halo found: ", len(tabh))
+    print ("Rejoined: ", len(tabr))
     counth, countr = 0, 0
     fout = open(filename, "w")
     fout.write("#a_i Mass Vinit T_a a_rejoin M_c Mach flag LogMvir LogMsub Rvir PhEWKey\n")
     for i in range(len(tabi)):
-        key = tabi['PhEWKey'][i]
+        key = tabi['ID'][i]
         if(key in key_to_idx_r): countr += 1
         if(key in key_to_idx_h): counth += 1        
         # Sometimes there are very few PhEW that rejoined.
@@ -86,8 +89,8 @@ def match_tables(tabi, tabr, tabh, filename):
             fout.write("%6.3f %6.3f %6.1f " % (halo['LogMvir'], halo['LogMsub'], halo['Rvir']))
             fout.write("%8d\n" % (key))
     fout.close()
-    print "Launched - Rejoin pairs: ", countr
-    print "Launched - Halo pairs: ", counth
+    print ("Launched - Rejoin pairs: ", countr)
+    print ("Launched - Halo pairs: ", counth)
 
 def load_matched_data(filename):
     return genfromtxt(filename, dtype='i8')
@@ -112,12 +115,12 @@ def show_matched_data(tab_init, tab_rejoin, idxmap, nskip=1):
                     flag_count[tabrejoin['flag'][idx]] += 1
                 iskip = 0
         iskip += 1
-    print flag_count
+    print (flag_count)
     plt.plot(xarr, yarr, "b.", alpha=0.2, markersize=3)
     plt.show()
 
 # ------
-foutname = "/scratch/shuiyao/scidata/newwind/"+MODEL+"/phewsinfo."+zstr
+foutname = "/home/shuiyao_umass_edu/scidata/"+MODEL+"/phewsinfo."+zstr
 tabinit, tabrejoin, tabhalo = load_tables()
 match_tables(tabinit, tabrejoin, tabhalo, foutname)
 # rejoin_idx = load_matched_data("winds.dat")
@@ -137,30 +140,30 @@ def match_tables_old():
     fout = open("winds.dat", "w")
     buf_rejoin = []
     i_rejoin_start = 0
-    thisIDrejoin = tabrejoin['PhEWKey'][i_rejoin]
+    thisIDrejoin = tabrejoin['ID'][i_rejoin]
     while(i_init < N_init):
         # 1. ID < ID
-        if(tabinit['PhEWKey'][i_init] < thisIDrejoin): # Not rejoined
+        if(tabinit['ID'][i_init] < thisIDrejoin): # Not rejoined
             i_init += 1
             fout.write("-1\n")
             continue
         # 2. ID > ID (end)
-        if(tabinit['PhEWKey'][i_init] > thisIDrejoin and i_rejoin == N_rejoin):
+        if(tabinit['ID'][i_init] > thisIDrejoin and i_rejoin == N_rejoin):
             i_init += 1
             fout.write("-1\n")
             continue
         # ID >= ID;
         # 1. ID > ID: 
-        if(tabinit['PhEWKey'][i_init] > thisIDrejoin): # Fetch for the new ID
-            while(i_rejoin < N_rejoin and tabinit['PhEWKey'][i_init] > tabrejoin['PhEWKey'][i_rejoin]):
+        if(tabinit['ID'][i_init] > thisIDrejoin): # Fetch for the new ID
+            while(i_rejoin < N_rejoin and tabinit['ID'][i_init] > tabrejoin['ID'][i_rejoin]):
                 i_rejoin += 1
             # now ID <= ID
             if(i_rejoin == N_rejoin): continue # All the rest hasn't rejoined
             buf_rejoin = []
             i_rejoin_start = i_rejoin
-            thisIDrejoin = tabrejoin['PhEWKey'][i_rejoin]
+            thisIDrejoin = tabrejoin['ID'][i_rejoin]
             # Store all rejoin info for this new ID >>>
-            while(i_rejoin < N_rejoin and tabrejoin['PhEWKey'][i_rejoin] == thisIDrejoin):
+            while(i_rejoin < N_rejoin and tabrejoin['ID'][i_rejoin] == thisIDrejoin):
                 buf_rejoin.append(tabrejoin[i_rejoin])
                 i_rejoin += 1
             # <<<

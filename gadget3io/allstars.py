@@ -19,28 +19,27 @@ import config_mpl
 from astroconst import pc, ac
 import os
 
+import pandas as pd
+
 print ("compiled.")
 SYSTEM = 'unity'
-NCPU = 256
 ATOL = 1.e-4 # Tolerance for ascale (a(SF) < a(Acc) + ATOL)
 # DTTOL = 1000. * ac.myr
 DTTOL = 1.e9 # yr
 
 STELLAR_AGE_IN_ASCALE = True # Format of the P(Star).Age
-SFRINFO_FORMATS = ["Gadget3", "GIZMO-PhEW", "GIZMO-PhEW-Extra"]
+SFRINFO_FORMATS = ["Gadget3", "GIZMO-PhEWOff", "GIZMO-PhEW-Extra"]
 
 import sys
 modelname = sys.argv[1]
 snapstr = sys.argv[2]
-lbox = sys.argv[3]
-flag = (int)(sys.argv[4])
-if(len(sys.argv) > 5): mstr = "."+sys.argv[5]
+lbox = (float)(sys.argv[3])
+NCPU = (int)(sys.argv[4])
+flag = (int)(sys.argv[5])
+if(len(sys.argv) > 6): mstr = "."+sys.argv[6]
 else: mstr = ""
 
-if(lbox == "25"):
-    unit_m = 3469578.81574 / 8.
-if(lbox == "50"):
-    unit_m = 3469578.81574
+unit_m = 3469578.81574 * (lbox / 50.) ** 3
 print ("unit_m =", unit_m)
 
 class skidgal():
@@ -65,13 +64,13 @@ def read_gal_data(skidbase, snapstr):
 
 def format_of_sfrinfo_file(flag_format):
     if(flag_format == "GIZMO-PhEW-Extra"): # update: 20200724
-        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mass', 'wmass', 'Z', 't1', 't3'),
+        fformat={'names': ('atime', 'AccKey', 'alast', 'tmax', 'mass', 'wmass', 'Z', 't1', 't3'),
                  'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8')}
         cols = (0,2, 3,4,5,6,7, 8,10)
-    if(flag_format == "GIZMO-PhEW"): # update: 20200110
-        fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mass', 'wmass', 'Z', 't1', 't3'),
-                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8', 'f8')}
-        cols = (0,1,2,3, 6,7,8,9,11)
+    if(flag_format == "GIZMO-PhEWOff"): # update: 20210107
+        fformat={'names': ('atime', 'AccKey', 'alast', 'tmax', 'mass', 'Z'),
+                 'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8')}
+        cols = (0,2,3,4,5,7)
     if(flag_format == "Gadget3"):
         fformat={'names': ('atime', 'ID', 'alast', 'tmax', 'mstar', 'mass', 'Z'),
                  'formats': ('f8', 'i8', 'f8', 'f8', 'f8', 'f8', 'f8')}
@@ -125,8 +124,12 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_format):
 
     # stars = sort(stars, order='ID') # Order By StarP.ID(AccKey)
     acckey_to_sidx = dict()
+    acckey_to_alast = dict()
     acckeys = stars['ID']
-    for i in range(len(acckeys)): acckey_to_sidx[acckeys[i]] = i
+    smass = stars['Mass']
+    for i in range(len(acckeys)):
+        acckey_to_sidx[acckeys[i]] = i
+        acckey_to_alast[acckeys[i]] = 0.0
     
     nparts = len(stars)
     aacc, alast, pmass, wmass, metals = [-1]*nparts, [-1]*nparts, [0.0]*nparts, [0.0]*nparts, [-1.0]*nparts # update: 20200110
@@ -136,43 +139,54 @@ def load_sfrinfo(stars, gals, sfrinfobase, outname, flag_format):
         fsfrinfo = sfrinfobase + "sfrinfo." + str(fi)
         print ("Reading: ", fsfrinfo)
         if(not os.path.exists(fsfrinfo)): break
-        acc = genfromtxt(fsfrinfo, dtype=fformat, usecols=cols) # update: 20200110
-        acckeys = acc['ID']
+        # acc = genfromtxt(fsfrinfo, dtype=fformat, usecols=cols) # update: 20200110
+        acc = pd.read_csv(fsfrinfo, usecols=['atime', 'AccKey', 'LastSFTime', 'Tmax', 'WindMass', 'Mass', 'Z', 't1', 't3'])
+        acc.rename(columns={"LastSFTime":"alast", "Tmax":"tmax", "WindMass":"wmass", "Mass":"mass"}, inplace=True)
+        acc = acc[acc['alast'] == 0] # excluding 'spurious accretions'
+        acckeys = acc['AccKey']
         for iacc in range(len(acc)):
-            if(acckeys[iacc] in acckey_to_sidx): # Match
-                sidx = acckey_to_sidx[acckeys[iacc]]
-                aacc[sidx] = acc['atime'][iacc] # Accretion Time
-                alast[sidx] = acc['alast'][iacc] # LastSFTime
-                pmass[sidx] = acc['mass'][iacc] # Particle Mass At Accretion
-                metals[sidx] = acc['Z'][iacc] # Metallicity
-                if(flag_format != "Gadget3"): wmass[sidx] = acc['wmass'][iacc] # add: 20200110
+            last_sf_time = acc['alast'].iloc[iacc] # LastSFTime
+            thiskey = acckeys.iloc[iacc]
+            if(thiskey in acckey_to_sidx): # Match
+                # Now find the most recent major accretion event
+                if(abs(acc['alast'].iloc[iacc]) >= acckey_to_alast[thiskey]):
+                    acckey_to_alast[thiskey] = abs(acc['alast'].iloc[iacc])
+                else: continue
+                sidx = acckey_to_sidx[acckeys.iloc[iacc]]
+                aacc[sidx] = acc['atime'].iloc[iacc] # Accretion Time
+                alast[sidx] = last_sf_time
+                pmass[sidx] = acc['mass'].iloc[iacc] # Particle Mass At Accretion
+                metals[sidx] = acc['Z'].iloc[iacc] # Metallicity
+                if(flag_format == "GIZMO-PhEWOff"):
+                    wmass[sidx] = acc['mass'].iloc[iacc] if last_sf_time < 0 else 0.0
                 if(flag_format == "GIZMO-PhEW-Extra"):
-                    tavg[sidx] = acc['t1'][iacc] / acc['wmass'][iacc] # add: 20200724
+                    wmass[sidx] = acc['wmass'].iloc[iacc] # add: 20200110
+                    tavg[sidx] = acc['t1'].iloc[iacc] / acc['wmass'].iloc[iacc] # add: 20200724
                     if(tavg[sidx] > 1.34e10):
                         tavg[sidx] = 1.0
                     elif(tavg[sidx] < 1.e6):
                         tavg[sidx] = 0.0
                     else:
                         tavg[sidx] = acosmic(tavg[sidx])
-                    sigavg[sidx] = acc['t3'][iacc] / acc['wmass'][iacc] # add: 20200724
+                    sigavg[sidx] = acc['t3'].iloc[iacc] / acc['wmass'].iloc[iacc] # add: 20200724
     fout = open(outname, "w")
     if(flag_format == "GIZMO-PhEW-Extra"):
-        fout.write("#a_form a_acc a_last Mass WindMass WindAge WindSig Tmax Z GID HID\n") # update: 20200724
+        fout.write("#a_form a_acc a_last Mass StarMass WindMass WindAge WindSig Tmax Z GID HID\n") # update: 20200724
     else:
-        fout.write("#a_form a_acc a_last Mass WindMass Mstar Tmax Z GID HID\n") # update: 20200110        
+        fout.write("#a_form a_acc a_last Mass StarMass WindMass Tmax Z GID HID\n") # update: 20200110        
     for istars in range(len(stars)):
         gid, hid = stars['GID'][istars], stars['HID'][istars]
         # update: 20200110
         if(flag_format == "GIZMO-PhEW-Extra"):        
-            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e %7.5f %5.1f % 5.3f %7.5e %5d %5d\n" % \
+            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e %7.5e %7.5f %5.1f % 5.3f %7.5e %5d %5d\n" % \
             (stars['Age'][istars], aacc[istars], alast[istars], \
-             pmass[istars], wmass[istars], tavg[istars], sigavg[istars], \
+             pmass[istars], smass[istars], wmass[istars], tavg[istars], sigavg[istars], \
              stars['Tmax'][istars], metals[istars], \
              gid, hid)
         else:
-            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e % 5.3f %7.5e %5d %5d\n" % \
+            line = "%7.5f %7.5f % 7.5f %7.5e %7.5e %7.5e % 5.3f %7.5e %5d %5d\n" % \
             (stars['Age'][istars], aacc[istars], alast[istars], \
-             pmass[istars], wmass[istars], \
+             pmass[istars], smass[istars], wmass[istars], \
              stars['Tmax'][istars], metals[istars], \
              gid, hid)
         fout.write(line)
@@ -188,8 +202,8 @@ if(SYSTEM == "unity"):
     galbase = "/home/shuiyao_umass_edu/scidata/"+modelname+"/"
     fname = galbase+modelname+"_"+snapstr+".stars"+mstr
     outname = galbase+modelname+"_"+snapstr+".starinfo"+mstr
-    sfrinfobase = "/nas/astro-th-nas/shuiyao/"+modelname+"/SFRINFO/"
-    skidbase = "/nas/astro-th-nas/shuiyao/"+modelname+"/"
+    sfrinfobase = "/nas/astro-th/shuiyao/"+modelname+"/SFRINFO/"
+    skidbase = "/nas/astro-th/shuiyao/"+modelname+"/"
 stars = read_stars_data(fname, STELLAR_AGE_IN_ASCALE)
 gals = read_gal_data(skidbase, snapstr)
 load_sfrinfo(stars, gals, sfrinfobase, outname, SFRINFO_FORMATS[flag])

@@ -12,11 +12,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import config_mpl
 import matplotlib.patches as mpatches
-from matplotlib.mlab import griddata
 from matplotlib.colors import LogNorm
 from cosmology import tcosmic
 from astroconst import pc, ac
 from random import random
+from myinit import *
 import phew
 
 # Borrowed from phew.py
@@ -32,18 +32,19 @@ zstrs = ["z2", "z1", "z0"]
 
 REDSHIFT, zstr = zs[zi], zstrs[zi]
 
-modelname = "m4"
-model = "l25n288-phew-"+modelname
-MC_INIT = 2.0e37
+modelname = "m5"
+model = "l50n288-phew-"+modelname
+MC_INIT = 2.0e38
 # filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.tracks"
-fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo."+zstr
-fwindsinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/windsinfo."+zstr
-fmlossinfo = "/scratch/shuiyao/scidata/newwind/"+model+"/mlossinfo."+zstr
+
+fphewsname = DIRS['SCIDATA']+model+"/phewsinfo."+zstr
+fwindsinfo = DIRS['SCIDATA']+model+"/windsinfo."+zstr
+fmlossinfo = DIRS['SCIDATA']+model+"/mlossinfo."+zstr
 
 gridfile = "/scratch/shuiyao/sci/PHEW_TEST/"+model+"/"+"mrhot_z0_100"
 
 key_to_phew = dict();
-filename_phews = "/proj/shuiyao/"+model+"/WINDS/"+zstr+"/sorted.phews"
+filename_phews = DIRS['DATA']+model+"/WINDS/"+zstr+"/sorted.phews"
 
 class PhEWFields():
     '''
@@ -55,7 +56,7 @@ class PhEWFields():
     >>> tab = read_phew_tracks("phews.sample", info_fields)
     '''
     def __init__(self, fname="fields_tracks.dat"):
-        self.fields = genfromtxt(fname, dtype="i8,S2,S10", names=True)
+        self.fields = genfromtxt(fname, dtype="i8,U2,U10", names=True)
         self.idx = {}
         self.nfields = len(self.fields)
         for i in range(self.nfields): self.idx[self.fields['name'][i]] = self.fields['idx'][i]
@@ -73,9 +74,9 @@ class PhEWFields():
             dtypestr += self.fields['dtype'][idx] + ","
         return (cols, dtypestr, namelst)
         if(verbose == True):
-            print "idx: ", cols
-            print "names: ", namelst
-            print "dtypes: ", dtypestr
+            print ("idx: ", cols)
+            print ("names: ", namelst)
+            print ("dtypes: ", dtypestr)
 
 class PhEWParticle():
     def __init__(self, key):
@@ -91,7 +92,7 @@ def read_phew_fields(fname, fields):
     tab = genfromtxt(fname, usecols=fields[0], dtype=fields[1], names=fields[2], skip_header=1)
     return tab
 
-print "Compiled."
+print ("Compiled.")
 
 def create_phew_particles(PhEWTracks):
     PhEWParticles = []
@@ -107,10 +108,10 @@ def create_phew_particles(PhEWTracks):
             PhEWP = PhEWParticle(thisKey) # Create a new one
             PhEWP.track.append(PhEWTracks[i])            
         else:
-            raise ValueError, "Tracks data not sorted?"
+            raise ValueError("Tracks data not sorted?")
     PhEWP.track = array(PhEWP.track, dtype=PhEWTracks.dtype)
     PhEWParticles.append(PhEWP)
-    print "---> Created %d PhEW particles from tracks.\n" % (len(PhEWParticles))
+    print ("---> Created %d PhEW particles from tracks.\n" % (len(PhEWParticles)))
     return PhEWParticles
 
 def set_colors_phew_particles(PhEWParticles, field, vmin, vmax, logscale=False, cmap=plt.get_cmap(CMAP)):
@@ -199,7 +200,7 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
     iskip = 0
     count = 0
     keys = []
-    print "------ ", fieldy, "------"
+    print ("------ ", fieldy, "------")
     for i, PhEWP in enumerate(PhEWParticles):
     #     if(PhEWP.mvir > 13.0): print i
         # if(PhEWP.track['flag'][-1] != 0):
@@ -269,7 +270,7 @@ def draw_phew_particles(PhEWParticles, ax, fieldx, fieldy, fieldc, \
             if(showidx):
                 ax.text(xarr[-1], yarr[-1], wflag[-1], fontsize=10, color=PhEWP.color)
             iskip = 0
-    print "Number of PhEWs: ", count
+    print ("Number of PhEWs: ", count)
     return keys
 
 # filename = "phews.sample"
@@ -284,7 +285,7 @@ def load_particles(phew=True):
     pparts = create_phew_particles(tab)
     if(phew == True):
         get_initwinds_and_rejoin_info(pparts, fphewsname)
-    print "Load ", len(pparts), "PhEW Particles."
+    print ("Load ", len(pparts), "PhEW Particles.")
     return pparts
 
 def draw_field(pparts, nskip=NSKIP, logyscale=False):
@@ -357,7 +358,7 @@ def figure():
     fig, axs = draw(frm)
     
     pparts = load_particles() # tracks
-    print "Draw Tracks....."
+    print ("Draw Tracks.....")
     keys = draw_phew_particles(pparts, axs[0], 'time', 'T', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.3, post_recouple=False)    
     keys = draw_phew_particles(pparts, axs[1], 'rho', 'T', 'Mvir', nskip=NSKIP, logyscale=False, color_min=11.0, color_max=13.5, alpha=0.3, post_recouple=False)
 
@@ -365,7 +366,7 @@ def figure():
     for p in phews: key_to_phew[p.key] = p
     phews_to_show = []
     for key in keys: phews_to_show.append(key_to_phew[key])
-    print "Draw PhEWs (%d) ....." % (len(phews_to_show))
+    print ("Draw PhEWs (%d) ....." % (len(phews_to_show)))
     phew.draw_phew_particles(phews_to_show, axs[0], 'time', 'T_c', 'Mvir', nskip=1, logyscale=True, logxscale=False, color_min=11.0, color_max=13.5, alpha=0.3, allparts=True)
     phew.draw_phew_particles(phews_to_show, axs[1], 'rho_a', 'T_c', 'Mvir', nskip=1, logyscale=True, logxscale=True, color_min=11.0, color_max=13.5, alpha=0.3, allparts=True)
 
@@ -386,14 +387,23 @@ def figure():
 
 
 def write_wind_features(foutname=fwindsinfo):
-    PhEWParticles = phew.load_particles(filename_phews, fphewsname) # phews    
+    PhEWParticles = phew.load_particles(filename_phews, fphewsname) # phews
+    # filename_phews: sorted.phews under WINDS/z?/
+    #   |- select.sh
+    # fphewsname: phewsinfo.z?
+    #   |- match_initwinds_rejoin.py
+    #      |- [IN] initwinds.sorted
+    #      |- [IN] rejoin.sorted
+    #      |- [IN] phewsHalos
+    #         |- $PHEW-PY/loadhdf5/find_host_haloes_for_phews.py
+    #         |- [IN] .hdf5, .sogrp, .sovcirc
     fout = open(foutname, "w")
     fout.write("#ID Mvir Rvir Vinit V25 Rreturn\n")
     count, writecount = 0, 0
     for n, PhEWP in enumerate(PhEWParticles):
         flag = remove_spurious_particles(PhEWP.track)
         counter_spurious_particles[flag] += 1
-        if(flag == 5): print n
+        if(flag == 5): print (n)
         if(flag): continue
         PhEWP.mvir = 10. ** PhEWP.mvir
         vc, v25, vinit = 0., 0., 0.            
@@ -421,7 +431,7 @@ def write_wind_features(foutname=fwindsinfo):
         if(len(ddr) == 0):
             continue
         if(PhEWP.rvir == -1 or isnan(PhEWP.mvir)):
-            print "Warning: ", PhEWP.key, PhEWP.mvir, PhEWP.rvir
+            print ("Warning: ", PhEWP.key, PhEWP.mvir, PhEWP.rvir)
             continue
         if(max(ddr) < 100. and min(ddr) > -100.):
             writecount += 1
@@ -435,8 +445,8 @@ def write_wind_features(foutname=fwindsinfo):
             outstr += " "+str(vinit)+" "+str(v25)+" "+str(rreturn)
             outstr += "\n"
             fout.write(outstr)
-    print counter_spurious_particles            
-    print "Written, Count, All: ", writecount, count, len(PhEWParticles)
+    print (counter_spurious_particles)
+    print ("Written, Count, All: ", writecount, count, len(PhEWParticles))
     fout.close()
 
 def write_mloss_info(foutname=fmlossinfo):
@@ -499,7 +509,7 @@ def plotmedian(x, y, clr, opt=1, nbins=10, ax=[], xmin=30., xmax=150):
         ax.plot(xmid, ymid, ".-", color=clr)
     if(opt==2):
         plt.plot(xmid, ymid, ".-", color=clr)
-    print xmid, ymid
+    print (xmid, ymid)
 
 def V25Vc(fname=fwindsinfo):
     import ioformat
@@ -511,8 +521,8 @@ def V25Vc(fname=fwindsinfo):
     ax2 = plt.subplot(gs[1])
     mvir, rvir, vinit, v25, rreturn = ioformat.rcol(fname, [1,2,3,4,5], linestart=1)    
     vc = sqrt(pc.G * 10.**array(mvir) * ac.msolar / (array(rvir) * ac.kpc)) / 1.e5
-    print "Mvir Range: ", min(mvir), max(mvir)
-    print "Vc Range: ", min(vc), max(vc)
+    print ("Mvir Range: ", min(mvir), max(mvir))
+    print ("Vc Range: ", min(vc), max(vc))
     # ax1.plot(vc[::100], v25[::100], "b.")
     # ax1.plot(vc2, v252, ".", color="teal")
     # Rreturn < 0.25 Rvir!

@@ -6,17 +6,18 @@ from cosmology import tcosmic
 from astroconst import pc, ac
 from random import random
 import config_mpl
+from myinit import *
 
 GAMMA = 5./3.
 CMAP = "jet"
 NSKIP = 1
 
 # figure()
-modelname = "m4"
+modelname = "m5"
 MASS_CLOUD = 2.0e38
 model = "l50n288-phew-"+modelname
-filename = "/proj/shuiyao/"+model+"/WINDS/z1/sorted.phews"
-fphewsname = "/scratch/shuiyao/scidata/newwind/"+model+"/phewsinfo.z1"    
+filename = "/nas/astro-th/shuiyao/"+model+"/WINDS/z1/sorted.phews"
+fphewsname = "/home/shuiyao_umass_edu/scidata/"+model+"/phewsinfo.z1"    
 
 class PhEWFields():
     '''
@@ -156,10 +157,10 @@ def select_hard_particles(PhEWParticles):
             selected.append(PhEWP)
     return selected
 
-def select_particles(PhEWParticles, ntot=90, mmin=11.0, mmax=13.5):
+def select_particles(PhEWParticles, ntot=60, mmin=11.0, mmax=13.5):
     selected = []
     nbins = ntot / 2
-    mbins = [0] * nbins
+    mbins = [0] * (int)(nbins)
     dm = (mmax - mmin) / (float)(nbins)
     for i, PhEWP in enumerate(PhEWParticles):
         idx = (PhEWP.mvir - mmin) / dm
@@ -254,7 +255,7 @@ def draw_field():
     ax.set_ylim(0, 1000)
     ax.set_xlabel("Time [Myr]")
     ax.set_ylabel(r"$t_\mathrm{dis} [Myr]$")    
-    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+    plt.savefig(DIRS["FIGURE"]+"tmp.pdf")
     plt.show()
 
 def figure():
@@ -309,14 +310,14 @@ def figure():
     draw_phew_particles(parts_to_show, axs[4], 'time', 'rho_c', 'Mvir', nskip=NSKIP, logyscale=True, color_min=11.0, color_max=13.5, alpha=0.4)
     draw_phew_particles(parts_to_show, axs[5], 'time', 'rho_a', 'Mvir', nskip=NSKIP, logyscale=True, color_min=11.0, color_max=13.5, alpha=0.4)
 
-    axs[1].text(0.5, 0.85, modelname, fontsize=12, transform=axs[1].transAxes)
+    # axs[1].text(0.5, 0.85, modelname, fontsize=12, transform=axs[1].transAxes)
     axcbar = fig.add_axes([0.15,0.15,0.7,0.01])
     norm1 = mpl.colors.Normalize(vmin=11.0, vmax=13.5)
     cdcbar = mpl.colorbar.ColorbarBase(axcbar, cmap=plt.get_cmap(CMAP), norm=norm1, orientation="horizontal")
     cdcbar.set_ticks([11, 11.5, 12, 12.5, 13.0, 13.5])
     cdcbar.set_ticklabels(["11","11.5","12","12.5","13","13.5"])
     cdcbar.set_label(r"$M_\mathrm{vir}$")
-    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+    plt.savefig(DIRS['FIGURE']+"tmp.pdf")
     plt.show()
 
 # Check cmap

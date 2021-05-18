@@ -17,9 +17,9 @@ import config_mpl
 
 # model = "l25n144-phew-m5kh100fs10"
 # model = "l25n144-phew-norecouple"
-model = "l50n288-phew-m5"
-filename = "/nas/astro-th-nas/shuiyao/"+model+"/WINDS/z1/sorted.phews"
-fphewsname = "/home/shuiyao_umass_edu/scidata/phew/"+model+"/phewsinfo.z1"
+model = "l50n288-phew-m5-rec"
+filename = "/nas/astro-th/shuiyao/"+model+"/WINDS/z1/sorted.phews"
+fphewsname = "/home/shuiyao_umass_edu/scidata/"+model+"/phewsinfo.z1"
 
 def select_particles(PhEWParticles, ntot=60, mmin=11.0, mmax=13.5):
     selected = []
@@ -72,7 +72,7 @@ def get_initwinds_and_rejoin_info(PhEWParticles, filename):
             cs_a = sqrt(GAMMA * pc.k * 10.**tab[idx]['T_a'] / (0.60 * pc.mh))
             PhEWP.atimei = tab[idx]['a_i']
             PhEWP.atimer = tab[idx]['a_rejoin']
-            PhEWP.machi = tab[idx]['Vinit'] * 1.e5 / cs_a
+            PhEWP.machi = tab[idx]['Vinit'] * 1.e5 / cs_a # not working any more, the Vinit is now sigmagal
             PhEWP.machr = tab[idx]['Mach']
             PhEWP.msub = tab[idx]['LogMsub']
             PhEWP.mvir = tab[idx]['LogMvir']
@@ -107,9 +107,11 @@ def draw(PhEWParticles, ax, fieldc, cmap='jet', \
         yarr = PhEWP.track['M_cloud'] / MCLOUD
         # xarr = PhEWP.track['atime'] - a0
         # yarr = PhEWP.track['dr']
-        if(PhEWP.atimei > 0):
-            ax.plot(PhEWP.machi, 1.0, "^", color=PhEWP.color, markersize=8)
-            xarr[0], yarr[0] = PhEWP.machi, 1.0
+
+        # if(PhEWP.atimei > 0):
+        #     ax.plot(PhEWP.machi, 1.0, "^", color=PhEWP.color, markersize=8)
+        #     xarr[0], yarr[0] = PhEWP.machi, 1.0
+
         if(PhEWP.atimer > 0):
             ax.plot(PhEWP.machr, PhEWP.mcloud, "*", color=PhEWP.color, markersize=8)
         else:
@@ -133,8 +135,8 @@ fig = plt.figure(1, figsize=(6,7))
 ax = fig.add_subplot(111)
 # draw(pparts, ax, "T_a", nskip=10, logcscale=True, color_selection=True, color_min=2.e4, color_max=1.e7, alpha=0.3)
 
-parts_to_show = select_particles(pparts, ntot=60)
-draw(parts_to_show, ax, "Mvir", nskip=NSKIP, step=1, logcscale=False, color_selection=True, color_min=11.0, color_max=13.0, alpha=0.5, cmap=CMAP)
+parts_to_show = select_particles(pparts, ntot=240)
+draw(parts_to_show, ax, "Mvir", nskip=6, step=1, logcscale=False, color_selection=True, color_min=11.0, color_max=13.0, alpha=0.5, cmap=CMAP)
 plt.text(0.6, 0.05, model, fontsize=12, transform = ax.transAxes)
 
 fig.subplots_adjust(top=0.9, bottom=0.25)
@@ -148,7 +150,7 @@ cdcbar.set_label("Mvir")
 print (counter_spurious_particles)
 ax.set_xlim(0.0, 20.0)
 ax.set_ylim(0.0, 1.0)
-ax.plot([1.2, 1.2], [0.0, 1.0], "k:") # vertical line
+ax.plot([1.0, 1.0], [0.0, 1.0], "k:") # vertical line
 ax.plot([0.0, 20.0], [0.1, 0.1], "k:")
 # ax.set_ylim(1.e-3, 2.0)
 # ax.set_yscale("log")

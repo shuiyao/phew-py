@@ -12,6 +12,7 @@ from scipy import rand
 import matplotlib as mpl
 import matplotlib.patches as mpatches
 import config_mpl
+from myinit import *
 
 # USEFUL FUNCTIONS:
 # plot_mloss_radius()

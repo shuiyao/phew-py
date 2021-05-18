@@ -32,7 +32,7 @@ struct gadget_dump h;
 int flag_read_dark = 0;
 int flag_read_star = 0;
 
-#define MAX_NSKID_GRPS 50000
+#define MAX_NSKID_GRPS 500000
 
 struct tipsy_header theader, soheader, galheader;
 struct star_particle *gals, *sohalos;
@@ -392,13 +392,6 @@ int load_hdf5(char *snap){
       P[i].LastSFTime = single[cnt];
       cnt += 1;
     }
-    hdf5_dataset = H5Dopen1(hdf5_grp, "PhEWVinit");
-    H5Dread(hdf5_dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, single);
-    H5Dclose(hdf5_dataset);
-    for(i=ngas, cnt=0; i<h.npart[0]+ngas; i++){
-      P[i].Vinit = single[cnt];
-      cnt += 1;
-    }
 #endif
 #ifdef PHEW_TRACK_INFO
     hdf5_dataset = H5Dopen1(hdf5_grp, "PhEWTrackInfo");
@@ -741,6 +734,7 @@ void read_sopar(char *filename)
     i++;
   }
   fclose(fp);
+  fprintf(stdout, "---> Reading .par done.\n");
 }
 
 int read_skid(int snapnum)

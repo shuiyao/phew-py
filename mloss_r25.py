@@ -10,7 +10,6 @@ from matplotlib.colors import LogNorm
 from astroconst import pc, ac
 from matplotlib import gridspec
 from pylab import setp
-from matplotlib.mlab import griddata
 from scipy import rand
 import matplotlib as mpl
 import matplotlib.patches as mpatches
@@ -34,7 +33,7 @@ boundsvalue = 0.60
 
 MMIN, MMAX = 11.0, 13.5
 Mgasp = 9.3e7
-outputbase = "/scratch/shuiyao/scidata/newwind/"
+outputbase = "/home/shuiyao_umass_edu/scidata/"
 
 def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4, verbose=False):
     x, y = bin1d.subsample(x0, y0, nonzero=True)
@@ -42,9 +41,9 @@ def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4, verbose=False):
     xline, yline = s.cen, s.median
     uline, lline = s.ubound, s.lbound
     if(verbose == True):
-        print "xline and yline: "
-        print len(x)
-        print xline, yline
+        print ("xline and yline: ")
+        print (len(x))
+        print (xline, yline)
     for i in range(len(yline))[1:-1]:
         if(yline[i] == 0):
             yline[i] = 0.5 * (yline[i-1] + yline[i+1])

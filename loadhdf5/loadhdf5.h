@@ -30,13 +30,10 @@ struct particle_data
   float Temp;
   float DelayTime;
   int    Flag;
-#ifdef PHEW_EXTRA_OUTPUT
   int Key;
   float WindMass;
   float Mcloud;
   float LastSFTime;
-  float Vinit;
-#endif
 #ifdef PHEW_TRACK_INFO
   float TrackInfo[4];
 #endif  

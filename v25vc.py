@@ -10,14 +10,14 @@ import matplotlib.patches as mpatches
 from matplotlib.colors import LogNorm
 import config_mpl
 
+# Input: $SCIDATA/$MODEL/windsinfo.z?
+
+# Output: V25-Vc Figure
+
 FFORMAT = "NEW"
 FBASE = "/home/shuiyao_umass_edu/scidata/phew/"
 simname = "p50n288ezwc"
-#simname = "p50n288zw"
-#simname = "p50n288sw"
 REDSHIFT = 1.0
-# XMIN, XMAX = 30., 400.
-# YMIN, YMAX = 50., 2000.
 XMIN, XMAX = 30., 600.
 YMIN, YMAX = 50., 2500.
 # XMIN, XMAX = 30., 800. # Whole range
@@ -27,12 +27,13 @@ CONTLEVELS = 5
 print ("compiled.")
 SAVEFIG = False
 
-simnames = ["l50n288-gadget3", "l50n288-phewoff", "l50n288-phew-m5", "l25n288-phew-m5"]
-titles = ["Gadget3", "GIZMO(PhEWOff)", "GIZMO(PhEW)", "GIZMO(PHEW),Hres"]
-# simnames = ["l50n288-phewoff", "l50n288-phew-m5", "l25n288-phew-m5"]
-# titles = ["GIZMO", "PhEW-Mc5-L50", "PhEW-Mc5-L25"]
-# simnames = ["l50n288-phewoff", "l50n288-phew-m4", "l25n288-phew-m4"]
-# titles = ["GIZMO", "PhEW-Mc4-L50", "PhEW-Mc4-L25"]
+# simnames = ["l50n288-gadget3", "l50n288-phewoff"]
+# titles = ["Gadget", "GIZMO"]
+# fig = plt.figure(1, figsize=(8,6))
+
+simnames = ["l50n288-phewoff", "l50n288-phew-m5", "l25n288-phew-m5"]
+titles = ["Non-PhEW, LowRes", "PhEW, LowRes", "PhEW, HighRes"]
+fig = plt.figure(1, figsize=(8,6))
 
 def get_fname(simname, z=REDSHIFT):
     if(z == 1.0):
@@ -95,12 +96,9 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
     z = z + 0.1
     z = z.T
     zf = ndimage.gaussian_filter(z, sigma=0.3, order=0)
-    # cont = ax1.contour(xbins[1:], ybins[1:], zf, 10, colors="black")
-    # cont = ax1.contourf(xbins[1:], ybins[1:], zf, CONTLEVELS, cmap=plt.cm.Purples, norm=LogNorm(vmin=z.min(), vmax=z.max()))
-    # cont = ax1.contour(xbins[1:], ybins[1:], zf, CONTLEVELS, cmap=plt.cm.Reds, norm=LogNorm(vmin=z.min(), vmax=z.max()))    
-    # cont = ax1.contourf(xbins[1:], ybins[1:], zf, 6, cmap=plt.cm.Purples, vmin=z.min(), vmax=z.max())
-    # ax1.plot(vc[::200], v25[::200], "k.", markersize=2)
     ax1.pcolor(xbins[1:], ybins[1:], zf, cmap=plt.cm.Purples, norm=LogNorm(vmin=z.min(), vmax=z.max()))
+
+    # Lines from Muratov 2015
     xline = linspace(XMIN, XMAX, 100)
     y50line = 0.854 * xline ** 1.12
     y95line = 1.85 * xline ** 1.10
@@ -108,12 +106,11 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
     ysig16 = 0.7 * xsig16 ** 1.60
     ax1.plot(xline, y50line, "k-")
     ax1.plot(xline, y95line, "k--")
-    ax1.plot(xsig16, ysig16, "g-")    
-    ax2.set_xlabel(r"$V_c [km/s]$")
+    # ax1.plot(xsig16, ysig16, "g-")
+
+    # Figure captions
     ax1.set_xlim(XMIN, XMAX)
     ax1.set_ylim(YMIN, YMAX)
-    # ax1.set_ylim(9.,12.)
-    # ax1.set_title(titlename+", z = "+str(REDSHIFT))
     ax1.set_title(titlename)
     ax1.text(0.20, 0.02, simname, fontsize=12, transform=ax1.transAxes)
     ax1.set_xscale("log")
@@ -121,6 +118,7 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
     ax1.legend([r"$V_{25}$", r"$V_{init}$"], fontsize=16)
     fig.subplots_adjust(hspace=0)
     setp(ax1.get_xticklabels(),visible=False)
+
     # Count the fraction that makes NOT to R25
     FRAC_STEP = 25.
     frac = [0.] * int(XMAX/FRAC_STEP)
@@ -133,9 +131,6 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
         Ncount[idx] += 1.
         if(v25[i] != -1):
             frac[idx] += 1.
-        # if(FFORMAT == "NEW"):
-        #     if(0. < rreturn[i] < 0.25 * rvir[i]):
-        #         frac[idx] -= 1. # Rreturn < 0.25 Rvir!
     Ntot = sum(Ncount)
     for i in range(len(frac)):
         if(Ncount[i] > 0.):
@@ -143,7 +138,6 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
     ax2.plot(x, frac, "k.-")
     print ("Ncount = ", Ncount)
     print ("frac = ", frac)
-    # ax2.plot(x, array(Ncount)/Ntot, "-", color="teal")
     Ncount_Norm = 2.*max(Ncount)/Ntot
     ax2.bar(x, (array(Ncount)/Ntot)/Ncount_Norm, align="center", width=0.8*(x[1]-x[0]), color="grey")
     ax2.set_xlim(XMIN,XMAX)
@@ -151,6 +145,7 @@ def V25Vc(fname, ax1, ax2, titlename, simname):
     ax2.set_xscale("log")
     ax2.yaxis.set_ticks([0., 0.2, 0.4, 0.6, 0.8, 1.0])
     ax2.axhline(1.0, XMIN, XMAX, color="grey", linestyle=":")
+    ax2.set_xlabel(r"$V_c [km/s]$")
 
 fig = plt.figure(1, figsize=(10,6))
 gs = gridspec.GridSpec(2,len(simnames),height_ratios=[3,1])

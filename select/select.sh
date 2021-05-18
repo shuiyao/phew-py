@@ -24,7 +24,7 @@ elif [[ $redshift == "0.2" ]]; then
     zstr="z0/"
 fi
 
-fbase="/proj/shuiyao/"$simname"/WINDS/"
+fbase="/nas/astro-th/shuiyao/"$simname"/WINDS/"
 odir=$fbase$zstr
 mkdir $odir
 # Input: $WINDS/winds.*
@@ -43,7 +43,7 @@ python select_phewtracks.py $ncpu $redshift $fbase
 # echo "---- Selecting TRACK files ----"
 #python select_tracks.py $ncpu $redshift $fbase
 
-python find_host_haloes_for_phews.py $ncpu $redshift $simname
+#python find_host_haloes_for_phews.py $ncpu $redshift $simname
 
 cd $odir
 # Prepare initwinds.sorted and rejoin.sorted

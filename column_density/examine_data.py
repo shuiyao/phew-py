@@ -1,5 +1,5 @@
 import ioformat
-from mymod import *
+from myinit import *
 import matplotlib.pyplot as plt
 from pltastro import frame, draw
 from numpy import histogram, cumsum
@@ -17,7 +17,8 @@ uvbkg = "otherBackgrounds/"
 model = "T0.3_v1700_chi300_cond"
 # bkgstr = ["0-01", "0-1", "10", "100"]
 # bkgstr = ["1e5", "1e6", "1e7"]
-bkgstr = ["1e5T2", "1e6T2", "1e7T2"]
+# bkgstr = ["1e5T2", "1e6T2", "1e7T2"]
+bkgstr = ["1e6", "1e6T2"]
 
 # fnamex = fbase + model + "_x.csv"
 # fnamey = fbase + model + ".csv"
@@ -76,6 +77,7 @@ def generate_pdf_tables():
         ioncds[idx-1].sort()
         # pdb.set_trace()
         prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::(int)(NPIXLIM/NCELLS)][:NCELLS+1])
+        # prob = log10(ioncds[idx-1][::-1][:NPIXLIM][::(int)(NPIXLIM/NCELLS)-1])
         tabout.append(prob)
 
     fout = open(foutname, "w")
@@ -89,11 +91,11 @@ def generate_pdf_tables():
     fout.close()
 
 #I. Generate the CPDF Files
-# for bki in [0,1,2]:
-#     modelstr = model + "_" + bkgstr[bki]
-#     fnamex = fbase + uvbkg + modelstr + "_x.csv"
-#     fnamey = fbase + uvbkg + modelstr + "_y.csv"
-#     generate_pdf_tables()
+for bki in range(len(bkgstr)):
+    modelstr = model + "_" + bkgstr[bki]
+    fnamex = fbase + uvbkg + modelstr + "_x.csv"
+    fnamey = fbase + uvbkg + modelstr + "_y.csv"
+    generate_pdf_tables()
 
 def draw():
     fig, ax = plt.subplots(1,1,figsize=(8,6))

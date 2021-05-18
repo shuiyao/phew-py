@@ -19,7 +19,9 @@ if(REDSHIFT == 1.0): zstr = "078"
 if(REDSHIFT == 2.0): zstr = "058"
 if(REDSHIFT == 4.0): zstr = "033"
 
-def calculate_gas_profile(model, zstr):
+TMAXCUT = 5.0
+
+def calculate_gas_profile(model, zstr, PhEW=True):
     for mi, mstr in enumerate(["mh11", "mh12", "mh13"]):
         # fname << 
         fname = DIRS['SCIDATA'] + model + "/snapshot_"+zstr+".gas."+mstr
@@ -55,28 +57,56 @@ def calculate_gas_profile(model, zstr):
                 mism[bidx] += part['Mass']
                 mzism[bidx] += part['Mass'] * part['Z']
             else:
-                if(part['Mc'] > 0): # A PhEW Particle
-                    mwind[bidx] += part['Mass']
-                    mmix[bidx] -= part['WMass']
-                    mzwind[bidx] += part['Mass'] * part['Z']                    
-                if(part['Mc'] == 0): # A normal gas particle
-                    if(part['logT'] > 5.5):
-                        mhot[bidx] += part['Mass'] - part['WMass']
-                        mwhot[bidx] += part['WMass']
-                        mzhot[bidx] += part['Mass'] * part['Z']
+                if(PhEW):
+                    if(part['Mc'] > 0): # A PhEW Particle
+                        mwind[bidx] += part['Mass']
+                        mmix[bidx] -= part['WMass']
+                        mzwind[bidx] += part['Mass'] * part['Z']
+                    if(part['Mc'] == 0): # A normal gas particle
+                        if(part['logT'] > TMAXCUT):
+                            mhot[bidx] += part['Mass'] - part['WMass']
+                            mwhot[bidx] += part['WMass']
+                            mzhot[bidx] += part['Mass'] * part['Z']
+                        else:
+                            mcold[bidx] += part['Mass'] - part['WMass']
+                            mwcold[bidx] += part['WMass']
+                            mzcold[bidx] += part['Mass'] * part['Z']                        
+                        if(part['Tmax'] > TMAXCUT):
+                            mmaxhot[bidx] += part['Mass'] - part['WMass']
+                            mmaxwhot[bidx] += part['WMass']
+                        else:
+                            mmaxcold[bidx] += part['Mass'] - part['WMass']
+                            mmaxwcold[bidx] += part['WMass']
+                    if(part['Mc'] < 0): # Tricky, now very rare
+                        mwind[bidx] += part['Mass'] - part['WMass']
+                else: # Non-PhEW
+                    if(part['logT'] > TMAXCUT):
+                        mhot[bidx] += part['Mass']
+                        mzhot[bidx] += part['Mass'] * part['Z']                        
                     else:
-                        mcold[bidx] += part['Mass'] - part['WMass']
-                        mwcold[bidx] += part['WMass']
-                        mzcold[bidx] += part['Mass'] * part['Z']                        
-                    if(part['Tmax'] > 5.5):
-                        mmaxhot[bidx] += part['Mass'] - part['WMass']
-                        mmaxwhot[bidx] += part['WMass']
+                        mcold[bidx] += part['Mass']
+                        mzcold[bidx] += part['Mass'] * part['Z']
+                    if(abs(part['Tmax']) > TMAXCUT):
+                        mmaxhot[bidx] += part['Mass']
                     else:
-                        mmaxcold[bidx] += part['Mass'] - part['WMass']
-                        mmaxwcold[bidx] += part['WMass']
-                if(part['Mc'] < 0): # Tricky, now very rare
-                    mwind[bidx] += part['Mass'] - part['WMass']
-        fwind = mwind/mass
+                        mmaxcold[bidx] += part['Mass']
+                    if(part['Tmax'] <= 0): # used to be a wind
+                        # HERE, mzhot, mzcold already contains wind metals
+                        # mwind[bidx] += part['Mass']
+                        mzwind[bidx] += part['Mass'] * part['Z']
+                        if(part['logT'] > TMAXCUT):
+                            mhot[bidx] -= part['Mass']
+                            mwhot[bidx] += part['Mass']
+                        else:
+                            mcold[bidx] -= part['Mass']
+                            mwcold[bidx] += part['Mass']
+                        if(abs(part['Tmax']) > TMAXCUT):
+                            mmaxhot[bidx] -= part['Mass']
+                            mmaxwhot[bidx] += part['Mass']                            
+                        else:
+                            mmaxcold[bidx] -= part['Mass']
+                            mmaxwcold[bidx] += part['Mass']                            
+
         fout = open(foutname, "w")
         fout.write("#r Mass Mcold Mhot Mwind Mwcold Mwhot Mism Mmaxcold Mmaxhot Mmaxwcold Mmaxwhot Mzcold Mzhot Mzism Mzwind\n")
         for i in range(len(redges)):
@@ -89,5 +119,9 @@ def calculate_gas_profile(model, zstr):
             fout.write(line)
         fout.close()
 
-calculate_gas_profile("l50n288-phew-m5-spl", zstr) 
+# calculate_gas_profile("l50n288-phew-m5", zstr)
+# calculate_gas_profile("l50n288-phew-m4", zstr)
+# calculate_gas_profile("l25n288-phew-m5", zstr)
+calculate_gas_profile("l50n288-phewoff", zstr, PhEW=False)
+# calculate_gas_profile("l50n576-phew-m5", zstr) 
 print ("Done.")

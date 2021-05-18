@@ -59,12 +59,16 @@ int write_sph_particles(char *snap){
   char filename[200];
   FILE *outputfile;
   double MeanWeight, LogRho, LogTemp;
+  int SfFlag;
   int icount = 0;
   int nskip = h.npart[0] / NSPH;
+#ifdef NOSPHSKIP
+  nskip = 1;
+#endif    
   
   sprintf(filename, "%s.sph", snap);
   outputfile = fopen(filename, "w");
-  fprintf(outputfile, "#idx rho[g/cm-3] Log(T[K]) f_wind\n");
+  fprintf(outputfile, "#idx logrho logT Mass MassZ f_wind SfFlag\n");
   for(i=0; i < h.npart[0]; i++) {
     if(i % nskip == 0){ // Selected for output
       /* Density consistent with the rhot.c */
@@ -75,9 +79,10 @@ int write_sph_particles(char *snap){
       LogTemp = P[i].Temp * unit_Temp;
       LogTemp = log10(LogTemp * GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight);
       /* Now we have temperature for the particle. */
+      SfFlag = (P[i].Sfr > 0) ? 1 : 0;
     
-      fprintf(outputfile,"%d %7.5e %6.4f %5.3e\n",
-	      i, LogRho, LogTemp, P[i].WindMass);
+      fprintf(outputfile,"%d %7.5e %6.4f %7.5e %7.5e %5.3e %1d\n",
+	      i, LogRho, LogTemp, P[i].Mass, P[i].metal[0], P[i].WindMass, SfFlag);
     } // Mcloud != 0
   }
   fclose(outputfile);
@@ -103,7 +108,7 @@ int write_phew_particles(char *snap){
   /* 20201104: Add rhoa and Ta */
   fprintf(outputfile, "#idx rhoc Tc rhoa Ta f_cloud f_wind LastSFTime\n");
   for(i=0; i < h.npart[0]; i++) {
-    if(P[i].Mcloud != 0){ // Is or Has been a PhEW
+    if(P[i].Mcloud > 0){ // Is or Has been a PhEW
       /* Density consistent with the rhot.c */
       icount ++;
       LogRho = P[i].Rho * UNIT_M / (pow(UNIT_L, 3) * unit_Density);

@@ -10,7 +10,7 @@ from numpy import genfromtxt, log10
 
 errormsg = "Usage: "+sys.argv[0]+" ncpu redshift(0,1,2) modelname"
 if(len(sys.argv) != 4):
-    print errormsg
+    print (errormsg)
     sys.exit(1)
 else:
     NCPU = int(sys.argv[1])
@@ -21,7 +21,7 @@ else:
 # MODELNAME = "l25n144-phew"
 # REDSHIFT = 1.0
 
-folder = "/proj/shuiyao/"
+folder = "/nas/astro-th/shuiyao/"
 if(REDSHIFT == 0.2):
     snapnum = 100
     zstr = 'z0'
@@ -58,7 +58,7 @@ def load_files():
     global attrs
     global haloes
     
-    print "Loading Files... "
+    print ("Loading Files... ")
     hf = h5py.File(snapname, "r")
 
     header = hf['Header']
@@ -75,7 +75,7 @@ def load_files():
 
 # Construct hash map from initwinds.*
 def build_maps():
-    print "Building maps PID -> Mass, PhEWKey ... "
+    print ("Building maps PID -> Mass, PhEWKey ... ")
     phewbase = fbase + "/WINDS/" + zstr + "/"
     for icpu in range(NCPU):
         finitwinds = phewbase + "initwinds." + str(icpu)
@@ -94,10 +94,10 @@ def build_maps():
 # Match snapfiles to initwinds.*
 pid_to_idx = dict()
 def match_phews():
-    print "Matching PhEWs ... "
+    print ("Matching PhEWs ... ")
     Nsph = attrs['NumPart_Total'][0]
     for i in range(Nsph):
-        if(i % 100000 == 0): print "i = ", i
+        if(i % 100000 == 0): print ("i = ", i)
         pid = pids[i] # pids = gp['ParticleIDs']
         if(pid in pid_to_key): # PID found in initwinds.*
             phew_key = pid_to_key[pid]

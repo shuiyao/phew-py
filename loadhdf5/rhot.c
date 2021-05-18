@@ -99,8 +99,10 @@ void ReadData(char *filename)
       LogT *= GAMMA_MINUS1 * PROTONMASS / BOLTZMANN * MeanWeight;
       LogT = log10(LogT);
       Mass = P[i].Mass;
+#ifdef PHEW_EXTRA_OUTPUT      
       if(P[i].Mcloud > 0) WindMass = P[i].Mass;
       else WindMass = P[i].WindMass;
+#endif      
       Nout += GridCount(LogRho, LogT, Mass, WindMass);
       Ntot ++;
     }

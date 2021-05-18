@@ -1,3 +1,4 @@
+from myinit import *
 import ioformat
 import matplotlib.pyplot as plt
 from scipy import array
@@ -11,8 +12,8 @@ from scipy.interpolate import interp1d
 zstrs = ["z0.10", "z1.00", "z2.00", "z3.00", "z4.00"]
 smmr_name_prefix = "c_smmr_"
 smmr_name_suffix = "_red_all_smf_m1p1s1_bolshoi_fullcosmos_ms.dat"
-SMMRBASE = "/scratch/shuiyao/sci/REFERENCES/behroozi13/smmr/"
-SMBASE = "/scratch/shuiyao/sci/REFERENCES/behroozi13/sm/"
+SMMRBASE = DIRS['SCI']+"REFERENCES/behroozi13/smmr/"
+SMBASE = DIRS['SCI']+"REFERENCES/behroozi13/sm/"
 
 def read_smmr(z, mhthen=False):
     fname = SMMRBASE
@@ -20,7 +21,7 @@ def read_smmr(z, mhthen=False):
     if(mhthen == True): fname += "then_"
     i = (int)(z)
     fname += zstrs[i] + smmr_name_suffix
-    print "Reading: ", fname
+    print ("Reading: ", fname)
     mh, dm, e1, d2 = ioformat.rcol(fname, [0,1,2,3], linestart=1)
     return mh, dm, e1, d2
 
@@ -33,7 +34,7 @@ def read_sm(mh):
     fname += sm_name_prefix
     i = (int)(mh - 11.0)
     fname += mhstrs[i] + sm_name_suffix
-    print "Reading: ", fname
+    print ("Reading: ", fname)
     a, frac, e1, e2 = ioformat.rcol(fname, [0,1,2,3])
     return a, frac, e1, e2
 

@@ -1,3 +1,4 @@
+from myinit import *
 import matplotlib.pyplot as plt
 from scipy import linspace, exp, log10, log, array, logspace
 from scipy.integrate import quad
@@ -9,17 +10,14 @@ import ioformat
 # OrigGasMass = 0.00653561 - 9.3e7 Msolar
 # 64 Particles = 4.1827904e9M_solar
 
-import matplotlib as mpl
-mpl.rcParams['mathtext.default'] = "tt"
-mpl.rcParams['axes.labelsize'] = "large"
-
 YMIN, YMAX = -5.0, -1.0
 #YMIN, YMAX = -5.4, 0.6
 
-# SHOW_MODEL_LIST = [1, 2, 3, 4, 5]
-fbase = "/scratch/shuiyao/sci/PHEW_TEST/"
-# SHOW_MODEL_LIST = [1, 2, 3, 4, 5, 6]
-SHOW_MODEL_LIST = [6, 13, 11, 12]
+SHOW_MODEL_LIST = [1, 2, 3, 4, 5, 6, 8]
+lw = [1, 2, 1, 1, 2, 2, 2]
+lstyles = ["--", "--", "-", "-", "-", "-", "-"]
+#SHOW_MODEL_LIST = [0, 1, 4, 8]
+fbase = DIRS['SCIDATA']
 
 #P50N288
 MLIM_LRES = 2.*5.8e9 # 128 Msph
@@ -38,7 +36,7 @@ SAVE_FIGURE = False
 PLOT_BERNARDI13 = False
 
 from numpy import loadtxt
-midx, models, clrs, lgds = loadtxt("models.dat", unpack=True, dtype='i8, S30, S20, S20')
+midx, models, clrs, lgds = loadtxt("models.dat", unpack=True, dtype='i8, U30, U20, U20')
 
 titlestr = "P50N288, Baldry+12, Tomczak+14, EAGLE"
 fig = plt.figure(1, figsize=(8,8))
@@ -49,9 +47,7 @@ for i in range(4):
 lines_z = []
 lines_data = []
 lines_runs = []
-zstr = ["036", "005", "003", "001"]
-zstr2 = ["098", "078", "058", "033"]
-zstr3 = ["098", "078", "058", "033"]
+zstr2 = ["108", "078", "058", "033"]
 
 # colors = ["black","black","black","black"]
 # colors = ["black", "red", "blue", "purple"]
@@ -71,7 +67,7 @@ def read_gsmfs(fname):
     return x, y
 
 # -------------------------------- DATA --------------------------------
-def plot_gsmf_model(mi, axs, noplotlist=[]):
+def plot_gsmf_model(mi, axs, noplotlist=[], lw=1, lstyle="-"):
     modelname = models[mi]
     clr = clrs[mi]
     gsmfs = [ \
@@ -81,12 +77,12 @@ def plot_gsmf_model(mi, axs, noplotlist=[]):
               fbase + modelname + "/" + "gsmf_" + zstr2[3]+".txt"]
     for i in range(len(gsmfs)):
         if(i in noplotlist): continue
-        print gsmfs[i]
+        print (gsmfs[i])
         ms, phi = read_gsmfs(gsmfs[i])
-        line, = axs[i].plot(ms, phi, "-", color=clr, linewidth=2)
+        line, = axs[i].plot(ms, phi, linestyle=lstyle, color=clr, linewidth=lw)
 
-for mi in SHOW_MODEL_LIST:
-    plot_gsmf_model(mi, axs)
+for i, mi in enumerate(SHOW_MODEL_LIST):
+    plot_gsmf_model(mi, axs, lw=lw[i], lstyle=lstyles[i])
 
 def schechter(M, pars):
     m_internal = M / 10.**(pars[0])
@@ -103,7 +99,7 @@ pars_t14_z0 = [10.78, 2.88, -0.98, 0.05, -1.9]
 pars_t14_z1 = [10.54, 1.90, 0.30, 0.68, -1.45]
 pars_t14_z2 = [10.69, 0.15, 1.03, 0.55, -1.33]
 
-gsmf_baldry12 = "../REFERENCES/Baldry12/gsmf_baldry12_z0.dat"
+gsmf_baldry12 = "../../REFERENCES/Baldry12/gsmf_baldry12_z0.dat"
 ms, phi, err = ioformat.rcol(gsmf_baldry12, [0,2,3], linestart=3)
 phi = array(phi) / 1.e3
 err= array(err) / 1.e3
@@ -138,9 +134,9 @@ if(PLOT_BERNARDI13 == True):
     line_b13b, = axs[0].plot(log10(ms), phi, "--", color="green", linewidth=2)
 
 gsmfs_tomczak14 = [ \
-    "../REFERENCES/tomczak14/t14_z0.2_z0.5.dat",\
-    "../REFERENCES/tomczak14/t14c_z0.75_z1.25.dat",\
-    "../REFERENCES/tomczak14/t14c_z1.5_z2.5.dat",\
+    "../../REFERENCES/tomczak14/t14_z0.2_z0.5.dat",\
+    "../../REFERENCES/tomczak14/t14c_z0.75_z1.25.dat",\
+    "../../REFERENCES/tomczak14/t14c_z1.5_z2.5.dat",\
 ]
 # colors = ["green", "red", "blue"]
 axlst = [0,1,2]
@@ -157,7 +153,7 @@ for i in range(len(gsmfs_tomczak14))[:3]:
     # plt.plot(ms, phi0, "o", color=colors[i])
         lines_data.append(line) # Tomczak +14
 
-gsmf_song16 = "../REFERENCES/song16/gsmf_song16_z4.dat"
+gsmf_song16 = "../../REFERENCES/song16/gsmf_song16_z4.dat"
 ms, phi, e1, e2 = ioformat.rcol(gsmf_song16, [0,1,2,3], linestart=3)
 lower = -array(e2)
 upper = array(e1)
@@ -177,10 +173,10 @@ def read_mufasa(fname):
     return ms, phi
 
 gsmfs_mufasa = [\
-    "../REFERENCES/MUFASA/gsmf_mufasa_z0.dat",\
-    "../REFERENCES/MUFASA/gsmf_mufasa_z1.dat",\
-    "../REFERENCES/MUFASA/gsmf_mufasa_z2.dat",\
-    "../REFERENCES/MUFASA/gsmf_mufasa_z4.dat"\                
+    "../../REFERENCES/MUFASA/gsmf_mufasa_z0.dat",\
+    "../../REFERENCES/MUFASA/gsmf_mufasa_z1.dat",\
+    "../../REFERENCES/MUFASA/gsmf_mufasa_z2.dat",\
+    "../../REFERENCES/MUFASA/gsmf_mufasa_z4.dat"\                
 ]
 # colors = ["black", "red", "blue", "purple"]
 if(PLOT_MUFASA == True):
@@ -191,10 +187,10 @@ if(PLOT_MUFASA == True):
         
 if(PLOT_EAGLE == True):
     gsmfs_eagle = [ \
-        "../REFERENCES/EAGLE/gsmf/Ref_gsmf_z0p1.txt",\
-        "../REFERENCES/EAGLE/gsmf/Ref_gsmf_z1p0.txt",\
-        "../REFERENCES/EAGLE/gsmf/Ref_gsmf_z2p0.txt",\
-        "../REFERENCES/EAGLE/gsmf/Ref_gsmf_z4p0.txt"
+        "../../REFERENCES/EAGLE/gsmf/Ref_gsmf_z0p1.txt",\
+        "../../REFERENCES/EAGLE/gsmf/Ref_gsmf_z1p0.txt",\
+        "../../REFERENCES/EAGLE/gsmf/Ref_gsmf_z2p0.txt",\
+        "../../REFERENCES/EAGLE/gsmf/Ref_gsmf_z4p0.txt"
     ]
     # colors = ["black", "red", "blue", "purple"]
     for i in range(len(gsmfs_eagle)):
@@ -216,8 +212,8 @@ for i in range(4):
 # l1 = axs[0].legend([line_b13a, line_b13b], ["Dave +16", "EAGLE", "B13, cmodel", "B13, sersic"], loc=3, fontsize=12)
 l2 = axs[1].legend(lines_data, ["Baldry +12", "Tomczak +14", "Tomczak +14", "Song +16"], loc=3, fontsize=12)
 # plt.gca().add_artist(l1)
-axs[0].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$')
-axs[2].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$')
+axs[0].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$', fontsize=12)
+axs[2].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$', fontsize=12)
 axs[2].set_xlabel("Log(M*)")
 axs[3].set_xlabel("Log(M*)")
 fig.subplots_adjust(hspace=0.0, wspace=0.0)
@@ -229,18 +225,15 @@ axs[0].yaxis.set_ticks(linspace(-5.0, -1.0, 5))
 axs[2].yaxis.set_ticks(linspace(-5.0, -2.0, 4))
 
 from pltastro import legend
-lgd = legend.legend(axs[0])
-lgd.loc="lower left"
-lgd.fontsize = 10
-for mi in SHOW_MODEL_LIST:
-    lgd.addLine((lgds[mi], clrs[mi], "-", 2))
+lgd = legend.legend(axs[3])
+lgd.loc="lower right"
+lgd.fontsize = 8
+for i, mi in enumerate(SHOW_MODEL_LIST):
+    lgd.addLine((lgds[mi], clrs[mi], lstyles[i], lw[i]))
 lgd.draw()
 
 # plt.title(titlestr)
-plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
-if(SAVE_FIGURE == True):
-    plt.savefig("figures/"+runname+".eps")
-    plt.show()
-else:
-    plt.show()
+plt.savefig(DIRS['FIGURE']+"tmp.pdf")
+
+plt.show()
 

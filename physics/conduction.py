@@ -7,7 +7,7 @@ from astroconst import pc, ac
 from numpy import exp, log, pi, sqrt
 from scipy.optimize import bisect
 
-print "Compiling ... conduction.py ... DONE"
+print ("Compiling ... conduction.py ... DONE")
 
 # PHI_S = 1.1 # Fully ionized gas, Ti = Te
 # M_S = 1.5106 # Ms(1 + Ms^2/5) = 2 Phi_s; Ms ~ 2 Phi_s << 1
@@ -34,14 +34,14 @@ class parameters():
         self.p_fac = self.p_fac ** (self.mssq / (6.0 + self.mssq))
         self.p_fac *= self.ys1 ** (-2.0 * self.mssq / (1.0 + self.mssq))        
         
-        print "Parameter List: "
-        print "--------------------------------"
-        print "phi_s = ", self.phi_s
-        print "ys1 = ", self.ys1
-        print "h, H = ", h, self.H
-        print "Fsigma_fac = ", self.fsigma_fac
-        print "sigma_onset = ", self.sigma_onset
-        print "p_fac = ", self.p_fac
+        print ("Parameter List: ")
+        print ("--------------------------------")
+        print ("phi_s = ", self.phi_s)
+        print ("ys1 = ", self.ys1)
+        print ("h, H = ", h, self.H)
+        print ("Fsigma_fac = ", self.fsigma_fac)
+        print ("sigma_onset = ", self.sigma_onset)
+        print ("p_fac = ", self.p_fac)
 
 def init_paramters(): # Hopefully I will add this later
     return 0
@@ -82,8 +82,8 @@ def sigma_cond(r_c, n_e, T_e):
 def sigma_onset():
     y = exp(-0.5 * params.mssq)
     y *= params.ys1 ** (2.2) / (params.ys1 - 1.0) ** (0.2)
-    print "Phi_s, Ms = ", params.phi_s, params.m_s
-    print "h, ys1, sigma_onset = ", h, params.ys1, y
+    print ("Phi_s, Ms = ", params.phi_s, params.m_s)
+    print ("h, ys1, sigma_onset = ", h, params.ys1, y)
     return y
 
 # CM77EQ61, EQ62
@@ -114,7 +114,7 @@ def tau_evap_bs16(chi, mach, A = 0.01):
     g, gm1, gp1 = 5./3., 2./3.,  8./3.
     msq = mach ** 2
     x = (gm1 * msq + 2) * (2. * g * msq - gm1) / (4. * gp1 ** 2 * msq)
-    print "x = ", x
+    print ("x = ", x)
     if(x < 1): x = 1
     return 1./(A * x * sqrt(chi))
 
@@ -152,7 +152,7 @@ def solve_for_q(mach, phis=PHI_S):
     x = bisect(eqn_for_q, 0.001, 0.25, args=(mach, phis))
     b = 1./(GAMMA * mach * mach)    
     q = 10. * phis * (1. + b - x) ** (1.5) * sqrt(x)
-    print x
+    print (x)
     return q
 
 # WARNING: This is defined relative to RH condition at M ~ infinity!
@@ -215,14 +215,14 @@ def show_heat_flux(mach, M_c, v, n_a, T_a, qguess):
     qsat = 0.34 * n_e * pc.k * T_e * sqrt(pc.k * T_e / pc.me)
     qflow = 0.5 * n_a * v ** 3 * pc.mh * 0.60
     qratio = min(qsat, qclass)/qflow
-    print "Density, Temperature Ratios: %5.3f, %5.3f" % (n_e/n_a, T_e/T_a)
-    print "Cloud Radius: %5.3f [pc]" % (r_c * 1.e3 / ac.kpc)
-    print "Classical Flux: %5.3e" % (qclass)
-    print "Saturated Flux: %5.3e" % (qsat)
-    print "Flow Heat Flux: %5.3e" % (qflow)
-    print "Min(qcond/qflow) = %5.3f" % (qratio)
-    print "Density Enhancement = %5.3f" % (fac_conduction_density(qratio, mach))
-    print "Temperature Enhancement = %5.3f" % (fac_conduction_temperature(qratio, mach))    
+    print ("Density, Temperature Ratios: %5.3f, %5.3f" % (n_e/n_a, T_e/T_a))
+    print ("Cloud Radius: %5.3f [pc]" % (r_c * 1.e3 / ac.kpc))
+    print ("Classical Flux: %5.3e" % (qclass))
+    print ("Saturated Flux: %5.3e" % (qsat))
+    print ("Flow Heat Flux: %5.3e" % (qflow))
+    print ("Min(qcond/qflow) = %5.3f" % (qratio))
+    print ("Density Enhancement = %5.3f" % (fac_conduction_density(qratio, mach)))
+    print ("Temperature Enhancement = %5.3f" % (fac_conduction_temperature(qratio, mach)))
 
 def sanity_check():
     T_f = 3.0e6 # K
@@ -231,12 +231,12 @@ def sanity_check():
     M_c = 1.e4 * ac.msolar
     rho_c = M_c / (4.18879 * r_c ** 3)
     n_c = rho_c / (pc.mh * 1.30)
-    print "n_c = ", n_c
-    print "t_evap = ", tau_evap(M_c, r_c, n_f, T_f) / (1.e6 * ac.yr), "Myr"
-    print "t_evap (EQ64) = ", 2.8 * (n_c / n_f) * (r_c * 1.e3/ ac.kpc) / sqrt(T_f * params.phi_s * Fsigma(sigma_cond(r_c, n_f, T_f))), "Myr"
-    print "t_evap_class = ", tau_evap_classical(r_c, n_c, n_f, T_f)/ac.yr/1.e6, "Myr"
-    print "mfp = ", mfp(n_f, T_f) / (ac.kpc), "kpc"
-    print "sigma_cond = ", sigma_cond(r_c, n_f, T_f)
+    # print "n_c = ", n_c
+    # print "t_evap = ", tau_evap(M_c, r_c, n_f, T_f) / (1.e6 * ac.yr), "Myr"
+    # print "t_evap (EQ64) = ", 2.8 * (n_c / n_f) * (r_c * 1.e3/ ac.kpc) / sqrt(T_f * params.phi_s * Fsigma(sigma_cond(r_c, n_f, T_f))), "Myr"
+    # print "t_evap_class = ", tau_evap_classical(r_c, n_c, n_f, T_f)/ac.yr/1.e6, "Myr"
+    # print "mfp = ", mfp(n_f, T_f) / (ac.kpc), "kpc"
+    # print "sigma_cond = ", sigma_cond(r_c, n_f, T_f)
 
 def plotting():
     import matplotlib.pyplot as plt
@@ -295,8 +295,8 @@ def solve_for_saturation_point(n_ps, T_ps, L_T, T_c=1.e4, verbose=True):
     else:
         T_star = bisect(evaluate_saturation_point, T_c, T_ps, args=(n_ps, T_ps, L_T))
         if(verbose == True):
-            print "classical mlr = %5.3f" % (4.46e-15 * (T_ps ** 2.5 - T_star ** 2.5))
-            print "saturated mlr = %5.3f" % (1.42e-25 * n_ps * T_ps * L_T * T_star ** 1.03)
+            print ("classical mlr = %5.3f" % (4.46e-15 * (T_ps ** 2.5 - T_star ** 2.5)))
+            print ("saturated mlr = %5.3f" % (1.42e-25 * n_ps * T_ps * L_T * T_star ** 1.03))
     return T_star
 
 # Test:

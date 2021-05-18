@@ -4,9 +4,9 @@
 
 model=$1
 
-SCI=/scratch/shuiyao/sci
-SCIDATA=/scratch/shuiyao/scidata
-DATA=/proj/shuiyao
+SCI=/home/shuiyao_umass_edu/sci
+SCIDATA=/home/shuiyao_umass_edu/scidata
+DATA=/nas/astro-th/shuiyao
 
 echo $DATA/$model/WINDS/":"
 dir $DATA/$model/WINDS/

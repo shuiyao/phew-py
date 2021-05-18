@@ -10,7 +10,7 @@ import os
 # The tclock([2]) also provides information
 errormsg = "Usage: "+sys.argv[0]+" ncpu redshift(0,1,2) $WINDS"
 if(len(sys.argv) != 4):
-    print errormsg
+    print (errormsg)
     sys.exit(1)
 else:
     NCPU = int(sys.argv[1])
@@ -27,24 +27,24 @@ else:
     elif(REDSHIFT == 0.2):
         AMIN, AMAX, odir = "0.833333", amaxs[3], FBASE+"z0/"
     else:
-        print errormsg
+        print (errormsg)
         sys.exit(1)
     if(os.path.exists(odir) == 0):
-        print errormsg
-        print "Error: ", FBASE, "not found. Exit."
+        print (errormsg)
+        print ("Error: ", FBASE, "not found. Exit.")
         sys.exit(1)
-    print "Ncpu = ", NCPU
-    print "Directory: ", odir
+    print ("Ncpu = ", NCPU)
+    print ("Directory: ", odir)
 
 widfile = odir+"wid.dat"
 wids = ioformat.rcol(widfile, [0], [0])
 wids = set(wids) # Enabling fast search with wid in wids
-print len(wids), "Wind IDs read..."
+print (len(wids), "Wind IDs read...")
 
 tstart = time.time()
 tmid = tstart
 for icpu in range(NCPU):
-    print "Search File #", icpu, " | t = ", time.time() - tmid
+    print ("Search File #", icpu, " | t = ", time.time() - tmid)
     tmid = time.time()
     ifile = open(FBASE+"phews."+str(icpu), "r")
     ofile = open(odir+"phews."+str(icpu), "w")
@@ -60,4 +60,4 @@ for icpu in range(NCPU):
     ifile.close()
     ofile.close()
 
-print "Elapsed Time: ", time.time() - tstart, " sec"
+print ("Elapsed Time: ", time.time() - tstart, " sec")

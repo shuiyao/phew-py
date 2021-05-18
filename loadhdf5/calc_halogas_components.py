@@ -3,10 +3,23 @@ from astroconst import pc, ac
 from numpy import log10, genfromtxt, array, inf, linspace
 import h5py
 import ioformat
+import sys
 # from scipy.interpolate import interp1d
 from numpy import polyfit, polyval
 
+modelname = 'l50n288-phewoff'
 # Based on readhdf5.py
+# if(len(sys.argv) <= 1):
+#     raise ValueError("Need to specify modelname.")
+# else:
+#     modelname = sys.argv[1]
+
+if(len(sys.argv) == 3):
+    snapstr = ("000"+sys.argv[2])[-3:]
+    print("Set snapstr = ", snapstr)
+else:
+    print("Use default snapstr = 108")
+    snapstr = "108"
 
 BOXSIZE = 50000
 UNIT_MASS = 3469581.88
@@ -14,18 +27,17 @@ HPARAM = 0.7
 XH = 0.76
 XHE = (1.0 - XH) / (4.0 * XH)
 UNIT_T = 1.e10 * (2./3.) * 1.6726e-24 / 1.3806e-16
-# TMAX = 5.5
-# suffix = ""
-TMAX = 4.9
-suffix = ".T80k"
+TMAX = 5.0
+suffix = ""
+# TMAX = 4.9
+# suffix = ".T80k"
 
 # UNIT_MASS = 3469581.88 * (12./50.) ** 3
 
-modelname = "l50n288-phewoff"
+#modelname = "l50n288-phewoff"
 #modelname = "l50n288-phew-m5"
 #modelname = "p50n288fiducial"
-fbase = "/nas/astro-th-nas/shuiyao/"
-snapstr = "108"
+fbase = "/nas/astro-th/shuiyao/"
 snapname = fbase+modelname+"/snapshot_"+snapstr+".hdf5"
 galname = fbase+modelname+"/gal_z"+snapstr+".stat"
 soname = fbase+modelname+"/so_z"+snapstr+".sovcirc"
@@ -101,8 +113,9 @@ mism = log10(array(mism) * 1.e10 / HPARAM)
 mstar = log10(array(mstar) * 1.e10 / HPARAM)
         
 print ("Writing result."        )
-
 outname = fbase+modelname+"/so_z"+snapstr+".mbar"+suffix
+
+print ("Output: ", outname)
 fout = open(outname, "w")
 fout.write("#Mvir Msub Mcold Mhot Mism Mstar\n")
 for i in range(len(halos)-1):

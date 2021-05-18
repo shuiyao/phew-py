@@ -1,6 +1,6 @@
 #!/bin/bash
 
-folder="/nas/astro-th-nas/shuiyao/"
+folder="/nas/astro-th/shuiyao/"
 modelname=$1
 redshift=$2
 
@@ -21,6 +21,9 @@ elif [[ $redshift == "0.25" ]]; then
 elif [[ $redshift == "0.2" ]]; then
     snapstr="100"
     snapnum=100
+elif [[ $redshift == "0.0" ]]; then
+    snapstr="108"
+    snapnum=108
 fi
 
 fbase=$folder$modelname"/"
@@ -28,14 +31,17 @@ snap=$fbase"snapshot_"$snapstr
 
 echo $snap
 
-./get_particles -phew $snap
+#./get_particles -phew $snap
+#./get_particles -sph $snap
+
+python find_host_haloes_for_phews.py 256 $redshift $modelname
 
 # Output:
 # $datadir/$model/snapshot_???.phews
 # idx rhoc LogTc rhoa LogTa fc fw LastSFTime
 
-./rhot $fbase"snapshot" $snapnum
-mv mrhot_phew_$snapstr /home/shuiyao_umass_edu/sci/phew-py/data/$modelname/
+# ./rhot $fbase"snapshot" $snapnum
+# mv mrhot_phew_$snapstr /home/shuiyao_umass_edu/sci/phew-py/data/$modelname/
 
 # Output:
 # ncells_x, ncells_y
@@ -45,7 +51,7 @@ mv mrhot_phew_$snapstr /home/shuiyao_umass_edu/sci/phew-py/data/$modelname/
 
 # The default grid size is 256 x 256
 # Although we can have a smaller grid, e.g., 40 x 40
-# ./rhot $fbase"snapshot" z0 $snapnum 40 40
+# ./rhot $fbase"snapshot" z0 $snapnum 256 256
 
 
 # gdb --args ./loadhdf5 $snap

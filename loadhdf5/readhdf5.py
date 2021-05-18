@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
 import h5py
+import numpy as np
 
 # A Sample for handling HDF5 Files with Python
 
-snapname = "./data/snapshot_l6n36_031.hdf5"
+# snapname = "./data/snapshot_l6n36_031.hdf5"
+# snapname = "/nas/astro-th/shuiyao/l50n576-phew-m5/snapshot_108.hdf5"
+snapname = "/nas/astro-th/shuiyao/l50n288-phew-m5/snapshot_108.hdf5"
 
 hf = h5py.File(snapname, "r")
-print "File Read."
+print ("File Read.")
 
 header = hf['Header'] # Read the header
 
@@ -28,8 +31,9 @@ mass = gp['Masses'] # Mass
 temp = gp['InternalEnergy'] # Temperature in K
 rho = gp['Density'] # Density
 ne = gp['ElectronAbundance']
+sfr = gp['StarFormationRate']
 # ...
-print len(vel) # The total number of particles in the file
+print (len(vel)) # The total number of particles in the file
 
 def show_snap(): # Show the x-y projection of the snapshot
     x, y = [], []
@@ -37,5 +41,5 @@ def show_snap(): # Show the x-y projection of the snapshot
         x.append(p[0])
         y.append(p[1])
     plt.plot(x, y, "b.", markersize=2)
-    print len(x), max(x), max(y)
+    print (len(x), max(x), max(y))
     plt.show()

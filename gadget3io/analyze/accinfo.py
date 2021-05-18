@@ -9,6 +9,7 @@
 #   - +: non-SF -> SF
 #   - -: Wind -> SF
 # Tmax is set to 0 at launch.
+from myinit import *
 from cosmology import acosmic, tcosmic
 import ioformat
 from numpy import genfromtxt, linspace, array, sort, insert
@@ -16,37 +17,25 @@ from numpy import where, inf, log10, isinf
 import matplotlib.pyplot as plt
 import config_mpl
 
+# a_last >= 0 or a_last == 0?
+
 Mgas_orig = 1.167e7 # Hires
 Mgas_orig = 9.337e7 # Hires
 
-print "compiled."
+print ("compiled.")
 DRAW_FRAME = True
-TMAX_CUT = 5.5
+TMAX_CUT = 5.0
 SHOW_ALLWINDS = True
-RENEW = True
+RENEW = False
 
 # modelnames = ["p50n288sw", "l50n288-phewoff", "p50n288beta2"] # mi
 # lgds = ["RefSlow", "Ref", "Ref$\sigma$3"]
-lstyles = ["--", "-", ":"]
-# modelnames = ['l25n288-phew-m4', 'l25n288-phew-m5']
-# lgds = ["PhEW-L25-Mc4", "PhEW-L25-Mc5"]
-#modelnames = ['l50n288-phew-m4', 'l50n288-phew-m5']
-#lgds = ["PhEW-L50-Mc4", "PhEW-L50-Mc5"]
-# modelnames = ['p50n288fiducial', 'l50n288-phewoff']
-# lgds = ["SPH", "GIZMO"]
-# modelnames = ['l50n288-phewoff', 'l25n288-phewoff-fw']
-# lgds = ["GIZMO", "GIZMO-Hres"]
-# modelnames = ['l50n288-phew-m5', 'l25n288-phew-m5']
-# lgds = ["PhEW-L50-Mc5", "PhEW-L25-Mc5"]
-# modelnames = ['l25n144-phew-m5', 'l25n288-phew-m5']
-# lgds = ["PhEW,25/144", "PhEW,25/288"]
-modelnames = ['l25n288-phew-m5', 'l25n288-phew-m5-spl']
-lgds = ["PhEW,25/288", "PhEW,25/288,Split"]
-# modelnames = ['l25n144-phew-rcloud', 'l50n288-phew-m5']
-# lgds = ["PhEW,25/144", "PhEW,50/288"]
-# modelnames = ['l25n144-phewoff', 'l25n288-phewoff-fw']
-# lgds = ["PhEW-L25N144-Mc5", "PhEW-L50-Mc5"]
-REDSHIFT = 0.25
+lstyles = [":", "--", "-"]
+# modelnames = ['l50n288-phew-m4', 'l50n288-phew-m5', 'l25n288-phew-m5']
+modelnames = ['l50n288-phewoff', 'l50n288-phew-m5', 'l50n576-phew-m5']
+fformats = [0, 1, 1]
+lgds = modelnames
+REDSHIFT = 0.0
 if(REDSHIFT == 0.0):
     zstr = "108"
 if(REDSHIFT == 2.0):
@@ -58,15 +47,14 @@ if(REDSHIFT == 0.25):
 
 def find_fnames(modelname):
     snapstr = zstr
-    sfrinfoname = "/scratch/shuiyao/scidata/gadget3io/"+modelname+"/"+modelname+"_"+snapstr+".starinfo"
-    soname = "/proj/shuiyao/"+modelname+"/"+"so_z"+snapstr+".sovcirc"
-    if(TMAX_CUT == 5.5):
-        foutname = "/scratch/shuiyao/scidata/gadget3io/"+modelname+"/"+modelname+"_"+snapstr+".accinfo"
+    sfrinfoname = DIRS['SCIDATA']+modelname+"/"+modelname+"_"+snapstr+".starinfo"
+    soname = DIRS['DATA']+modelname+"/"+"so_z"+snapstr+".sovcirc"
+    if(TMAX_CUT == 5.0):
+        foutname = DIRS['SCIDATA']+modelname+"/"+modelname+"_"+snapstr+".accinfo"
     if(TMAX_CUT == 6.0):        
-        foutname = "/scratch/shuiyao/scidata/gadget3io/"+modelname+"/"+modelname+"_"+snapstr+"_t6.accinfo"
+        foutname = DIRS['SCIDATA']+modelname+"/"+modelname+"_"+snapstr+"_t6.accinfo"
     return sfrinfoname, soname, foutname
 
-FIGNAME = "sfhistoryz2.pdf"
 color_coldw = "cyan"
 color_hotw = "magenta"
 color_allw = 'orange'
@@ -88,7 +76,8 @@ class binned_by_virial_mass():
         self.whot = array([0.0]*self.nbins)
         self.wmix = array([0.0]*self.nbins)        
         self.other = array([0.0]*self.nbins)
-        self.total = array([0.0]*self.nbins)
+        self.total = array([0.0]*self.nbins) # Mass Accretion
+        self.stotal = array([0.0]*self.nbins) # Mass In Stars 
         self.totalmass = array([0.0]*self.nbins)        
     def find_idx_for_bin(self, x):
         bidx = (int)((x - self.binmin) / self.binlen)
@@ -104,23 +93,25 @@ class binned_by_virial_mass():
             self.wcold[i] = tab['Mwcold'][i]
             self.whot[i] = tab['Mwhot'][i]
             self.total[i] = tab['Mtot'][i]
-            self.totalmass[i] = tab['Mtotalmass'][i]
+            self.stotal[i] = tab['Mstar'][i]            
+            self.totalmass[i] = tab['Mtotalmass'][i] * self.total[i] / self.stotal[i]
             self.other[i] = self.total[i] - self.cold[i] - self.hot[i] - self.wcold[i] - self.whot[i] - self.wmix[i]
     def write(self, fname):
         fout = open(fname, "w")
-        fout.write("#Mvir Mcold Mhot Mwcold Mwhot Mtot Mtotalmass\n")
+        fout.write("#Mvir Mcold Mhot Mwcold Mwhot Mtot Mstar Mtotalmass\n")
         for i in range(len(self.mid)):
-            line = "%g %g %g %g %g %g %g\n" % \
+            line = "%g %g %g %g %g %g %g %g\n" % \
                    (self.mid[i], self.cold[i], self.hot[i], self.wcold[i], \
-                    self.whot[i], self.total[i], self.totalmass[i])
+                    self.whot[i], self.total[i], self.stotal[i], self.totalmass[i])
             fout.write(line)
         fout.close()
     def draw(self, ax, lstyle="-", fraction=False):
         if(fraction == False):
             ax.plot(self.mid, log10(self.cold/self.totalmass), linestyle=lstyle, color="blue")
             ax.plot(self.mid, log10(self.hot/self.totalmass), linestyle=lstyle, color="red")
-            ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
-            ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
+            if(not SHOW_ALLWINDS):
+                ax.plot(self.mid, log10(self.wcold/self.totalmass), linestyle=lstyle, color=color_coldw)
+                ax.plot(self.mid, log10(self.whot/self.totalmass), linestyle=lstyle, color=color_hotw)
             if(SHOW_ALLWINDS):
                 ax.plot(self.mid, log10((self.whot+self.wcold)/self.totalmass), linestyle=lstyle, color=color_allw)                
             ax.plot(self.mid, log10((self.total-self.other)/self.totalmass), linestyle=lstyle, color="lightgrey")
@@ -128,8 +119,9 @@ class binned_by_virial_mass():
         else:
             ax.plot(self.mid, self.cold/self.total, linestyle=lstyle, color="blue")
             ax.plot(self.mid, self.hot/self.total, linestyle=lstyle, color="red")
-            ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
-            ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
+            if(not SHOW_ALLWINDS):
+                ax.plot(self.mid, self.wcold/self.total, linestyle=lstyle, color=color_coldw)
+                ax.plot(self.mid, self.whot/self.total, linestyle=lstyle, color=color_hotw)
             if(SHOW_ALLWINDS):
                 ax.plot(self.mid, (self.whot+self.wcold)/self.total, linestyle=lstyle, color=color_allw)                
             ax.plot(self.mid, 1.0-self.other/self.total, linestyle=lstyle, color="lightgrey")
@@ -137,10 +129,11 @@ class binned_by_virial_mass():
 
 def read_starinfo(fname, fformat=1):
     if(fformat == 1):
-        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
+        # Has StarMass
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
     else:
-        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
-    # a_form a_acc a_last Mass Tmax Mstar Mvir
+        stars = genfromtxt(fname, dtype='f8,f8,f8,f8,f8,f8,f8,f8,i8,i8', names=True)
+        # a_form a_acc a_last Mass StarMass WindMass Tmax Z GID HID
     # if Mvir < 0, it's a satellite galaxy
     return stars
 
@@ -153,6 +146,7 @@ def build_mvir_bins(stars, soname):
         mvir = msub[hidx] / HUBBLEPARAM
         if(isinf(log10(mvir))): continue
         bidx = mvbins.find_idx_for_bin(log10(mvir))
+        mvbins.stotal[bidx] += s['StarMass']
         mvbins.total[bidx] += s['Mass']
         if(s['a_last'] == 0): # primordial
             if(s['Tmax'] > TMAX_CUT):
@@ -175,8 +169,8 @@ def load_central_stars(fname, fformat):
     stars = read_starinfo(fname, fformat)
     nstars = len(stars)
     stars = stars[stars['GID'] == stars['HID']] # Only central galaxies    
-    print "Stars from central galaxies: %d/%d (%4.1f%%)" % \
-        (len(stars), nstars, (float)(len(stars)) / (float)(nstars) * 100.)
+    print ("Stars from central galaxies: %d/%d (%4.1f%%)" % \
+        (len(stars), nstars, (float)(len(stars)) / (float)(nstars) * 100.))
     return stars
 
 def find_total_mass(stars, soname):
@@ -190,8 +184,8 @@ def find_total_mass(stars, soname):
             ncount += 1
             msub[s['HID'] - 1] = 0.0 # Once added, reset to 0 to prevent repeated counting
     mtot = mtot / HUBBLEPARAM
-    print "Total amount of haloes found: %d." % (ncount)
-    print "  - Average mass (log): %5.2f." % log10((mtot / float(ncount)))
+    print ("Total amount of haloes found: %d." % (ncount))
+    print ("  - Average mass (log): %5.2f." % log10((mtot / float(ncount))))
     mtot = mtot * 2.e33    
     return mtot
 
@@ -220,20 +214,21 @@ def draw_frame():
     lgd1 = legend.legend(axs[0])
     lgd1.loc = "lower left"
     # lgd1.addLine((lgds[2], "black", ":", 1))
-    lgd1.addLine((lgds[0], "black", "--", 1))
-    lgd1.addLine((lgds[1], "black", "-", 1))
+    for i in range(len(lgds)):
+        lgd1.addLine((lgds[i], "black", lstyles[i], 1))
     lgd1.draw()
     lgd2 = legend.legend(axs[0])
     lgd2.loc = "lower right"
     lgd2.addLine(("cold", "blue", "-", 1))
     lgd2.addLine(("hot", "red", "-", 1))
-    lgd2.addLine(("cold wind", "cyan", "-", 1))
-    lgd2.addLine(("hot wind", "magenta", "-", 1))
+    # lgd2.addLine(("cold wind", "cyan", "-", 1))
+    # lgd2.addLine(("hot wind", "magenta", "-", 1))
+    # lgd2.addLine(("hot wind", "magenta", "-", 1))    
     if(SHOW_ALLWINDS):
         lgd2.addLine(("all wind", color_allw, "-", 1))    
     lgd2.draw()
 
-    FBEHROOZI = "/scratch/shuiyao/sci/REFERENCES/behroozi13/smmr/"
+    FBEHROOZI = DIRS['SCI']+"REFERENCES/behroozi13/smmr/"
     if(REDSHIFT == 2.0):
         snapnum, zstr_behroozi = "058", "2.00"
     if(REDSHIFT == 0.0):
@@ -254,14 +249,13 @@ def draw_frame():
     axs[1].plot([10.9, 10.9], [0.0, 1.1], "k--")
     axs[1].plot([10.0, 10.0], [0.0, 1.1], "k-")
 
-    plt.savefig(FIGNAME)
-    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+    plt.savefig(DIRS['FIGURE']+"tmp.pdf")
     plt.show()
     
-fformats = [0, 1]
-for mi in range(2):
+for mi in range(len(modelnames)):
     sfrinfoname, soname, foutname = find_fnames(modelnames[mi])
-    if(not os.path.exists(foutname) and RENEW == False):
+    if(not os.path.exists(foutname) or RENEW == True):
+        print ("Re-generate: "+foutname)
         stars = load_central_stars(sfrinfoname, fformat=fformats[mi])
         mvbins = build_mvir_bins(stars, soname) # totalmass estimated here
         mvbins.write(foutname)
