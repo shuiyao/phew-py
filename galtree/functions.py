@@ -98,8 +98,8 @@ def process_snapshot(model, snapnum):
     starname = os.path.join(DIRS['DATA'], model, "stars_{:03d}.csv".format(snapnum))
     config.spAll.to_csv(starname)
 
-def load_stars_from_snapshot(model, snapnum):
-    starname = os.path.join(DIRS['DATA'], model, "stars_{:03d}.csv".format(snapnum))
+def load_stars_from_snapshot(path_model, snapnum):
+    starname = os.path.join(path_model, "stars_{:03d}.csv".format(snapnum))
     config.spAll = pd.read_csv(starname)
     config.spAll.galId = config.spAll.galId.astype('Int32')
     config.spAll.initId = config.spAll.initId.astype('Int32')
