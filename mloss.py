@@ -7,7 +7,6 @@ from matplotlib.colors import LogNorm
 from astroconst import pc, ac
 from matplotlib import gridspec
 from pylab import setp
-from matplotlib.mlab import griddata
 from scipy import rand
 import matplotlib as mpl
 import matplotlib.patches as mpatches
@@ -19,12 +18,12 @@ from myinit import *
 
 # PARENT: /scratch/shuiyao/sci/newwind/mloss/mloss.py
 
-modelname = "l25n288-phew-m4"
-MC_INIT = 2.0e37
+modelname = "l50n576-phew-m5"
+MC_INIT = 2.0e38
 MMIN, MMAX = 11.0, 13.5
 #MMIN, MMAX = 11.0, 12.5
-unit_m = 433697.735404
-#unit_m = 433697.735404 * 8.0
+#unit_m = 433697.735404
+unit_m = 433697.735404 * 8.0
 
 REDSHIFT = 1.0
 if(REDSHIFT == 2.0):
@@ -35,14 +34,14 @@ if(REDSHIFT == 1.0):
 ascale = 1./(REDSHIFT+1.)
 # Mgasp = 82656250.0 # P6N36
 Mgasp = 9.3e7
-outputbase = "/scratch/shuiyao/scidata/newwind/"
+outputbase = DIRS['SCIDATA']+"phew/"
 fwind = outputbase+modelname+"/"+"phewsinfo."+subwfolder
 fmloss = outputbase+modelname+"/"+"mlossinfo."+subwfolder
 alphavalue = 0.4
-boundsvalue = 0.68
+boundsvalue = 0.6
 
 mclast_cut = 0.1
-print "compiled"
+print("compiled")
 
 # phewp = genfromtxt(fmloss, names=True)
 # modelname = "l50n288-phew-m5"
@@ -57,7 +56,7 @@ def Mclast():
     gs = gridspec.GridSpec(2,1,height_ratios=[4,1])
     ax = plt.subplot(gs[0])
     mvir, mclast, mratio = ioformat.rcol(fwind, [1,5,14], linestart=1)
-    print "Mvir Range: ", min(mvir), max(mvir)
+    print("Mvir Range: ", min(mvir), max(mvir))
     x, y = [], []
     for i in range(len(mclast)):
         if(mclast[i] > mclast_cut and mratio[i] < 20.0):
@@ -137,7 +136,7 @@ def plot_mloss_radius():
     gs = gridspec.GridSpec(3,1,height_ratios=[1,1,1])
     ax0 = plt.subplot(gs[0])
     Massloss_time(ax=ax0)
-    plt.title(modelname+", Z ~"+str(REDSHIFT)[:3])
+    plt.title(modelname+", z~"+str(REDSHIFT)[:3])
     ax1 = plt.subplot(gs[1])
     Massloss_radius(ax=ax1, rnorm=False)
     ax2 = plt.subplot(gs[2])
@@ -145,7 +144,7 @@ def plot_mloss_radius():
     setp(ax0.get_xticklabels(), visible=False)
     setp(ax1.get_xticklabels(), visible=False)
     fig.subplots_adjust(hspace=0, left=0.15)
-    plt.savefig("/scratch/shuiyao/figures/tmp.pdf")
+    plt.savefig(DIRS['FIGURE']+'tmp.pdf')
     plt.show()
 
 def plot_mloss_velocity():
@@ -153,7 +152,7 @@ def plot_mloss_velocity():
     gs = gridspec.GridSpec(2,1,height_ratios=[1,1])
     ax1 = plt.subplot(gs[0])
     Massloss_velocity(ax=ax1, rnorm=False)
-    plt.title(modelname+", Z~1.0")
+    plt.title(modelname+", z~1.0")
     ax2 = plt.subplot(gs[1])
     Massloss_velocity(ax=ax2, rnorm=True)
     setp(ax0.get_xticklabels(), visible=False)
@@ -167,13 +166,13 @@ def Massloss_radius(fin=fmloss, rnorm=False, ax=[]):
     # SELECT ONLY THOSE ANNIHILATED
     phewp = phewp[phewp['Rlast'] > 0]
     r75, r50, r25, rlast = phewp['R75'], phewp['R50'], phewp['R25'], phewp['Rlast']
-    mvir = phewp['Mvir']
+    mvir = log10(phewp['Mvir'])
     if(rnorm==True):
         r25 /= phewp['Rvir']
         r50 /= phewp['Rvir']
         r75 /= phewp['Rvir']
         rlast /= phewp['Rvir']
-    print max(mvir), min(mvir)
+    print(max(mvir), min(mvir))
 
     NBIN = 10
     # ax.plot(mvir[::10], rlast[::10], "k.", markersize=6)
@@ -188,17 +187,17 @@ def Massloss_radius(fin=fmloss, rnorm=False, ax=[]):
         ax.set_ylabel(r'$r/R_{vir}$')
         ax.set_ylim(0.0,1.5)
         ax.set_yticks([0., 0.5, 1.0])
-        ax.plot([MMIN, MMAX], [0.25, 0.25], "k:")
+        # ax.plot([MMIN, MMAX], [0.25, 0.25], "k:")
     else:
         ax.set_ylabel("r [kpc]")
         ax.set_ylim(0.,450.)
-        ax.set_yticks([0., 200., 400.])        
+        ax.set_yticks([0., 100., 200., 300., 400.])        
     legends = []
     legends.append(mpatches.Patch(color="yellow"))
     legends.append(mpatches.Patch(color="orange"))
     legends.append(mpatches.Patch(color="red"))
     legends.append(mpatches.Patch(color="magenta"))
-    plt.legend(legends, [r'$r_{last}$', r'$r_{25}$', r'$r_{50}$', r'$r_{75}$'], loc="upper right")
+    plt.legend(legends, [r'$r_{last}$', r'$r_{25}$', r'$r_{50}$', r'$r_{75}$'], loc="upper right", fontsize=16)
     # ax.text(0.8, 0.11, "+ V10/Vinit", color="blue", transform=ax.transAxes)
 
 def Massloss_time(fin=fmloss, ax=[]):
@@ -207,7 +206,7 @@ def Massloss_time(fin=fmloss, ax=[]):
     # SELECT ONLY THOSE ANNIHILATED
     phewp = phewp[phewp['Rlast'] > 0]
     t75, t50, t25, tlast = phewp['t75'], phewp['t50'], phewp['t25'], phewp['tlast']
-    mvir = phewp['Mvir']
+    mvir = log10(phewp['Mvir'])
 
     NBIN = 10
     plotmedian(mvir, tlast, ax, nbins=NBIN, clr="yellow", alphavalue=alphavalue)    
@@ -225,7 +224,7 @@ def Massloss_time(fin=fmloss, ax=[]):
     legends.append(mpatches.Patch(color="orange"))
     legends.append(mpatches.Patch(color="red"))
     legends.append(mpatches.Patch(color="magenta"))
-    plt.legend(legends, [r'$t_{last}$', r'$t_{25}$', r'$t_{50}$', r'$t_{75}$'], loc="upper right")
+    plt.legend(legends, [r'$t_{last}$', r'$t_{25}$', r'$t_{50}$', r'$t_{75}$'], loc="upper right", fontsize=16)
     # ax.text(0.8, 0.11, "+ V10/Vinit", color="blue", transform=ax.transAxes)
 
 def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
@@ -253,7 +252,7 @@ def Massloss_velocity(fin=fwind, rnorm=False, ax=[]):
         v50 /= vc
         v75 /= vc
         vlast /= vc
-        print max(mvir), min(mvir)
+        print(max(mvir), min(mvir))
 
     plotmedian(mvir, vlast, ax, nbins=20, clr="yellow", alphavalue=alphavalue)    
     plotmedian(mvir, v75, ax, nbins=20, clr="orange", alphavalue=alphavalue)
@@ -283,7 +282,7 @@ def plotmedian(x0, y0, ax, nbins=20, clr="blue", alphavalue=0.4, verbose=False):
     xline, yline = s.cen, s.median
     uline, lline = s.ubound, s.lbound
     if(verbose == True):
-        print xline, yline
+        print(xline, yline)
     for i in range(len(yline))[1:-1]:
         if(yline[i] == 0):
             yline[i] = 0.5 * (yline[i-1] + yline[i+1])

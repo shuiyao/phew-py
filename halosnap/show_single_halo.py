@@ -1,4 +1,4 @@
-from mymod import *
+from myinit import *
 from cosmology import acosmic, tcosmic
 import h5py
 import os
@@ -11,9 +11,9 @@ snapi = 33
 zstr = ("000"+str(snapi))[-3:]
 
 halostr = "h"+("00000" + str(haloid))[-5:]
-fbase = "/scratch/shuiyao/scidata/gadget3io/" + model + "/"
+fbase = "/nas/astro-th/shuiyao/scidata/gadget3io/" + model + "/"
 outname = fbase + "haloparts/" + halostr + "_" + zstr
-print "Reading: ", outname
+print ("Reading: ", outname)
 fout = open(outname, "r")
 hx, hy, hz, hmass, hrad = fout.readline().split()
 hx = (float)(hx)
@@ -63,10 +63,10 @@ ax.set_xlim(hx - 1.2 * hrad, hx + 1.2 * hrad)
 ax.set_ylim(hy - 1.2 * hrad, hy + 1.2 * hrad)
 
 plt.subplots_adjust(top=1.,bottom=0.,left=0.,right=1.,hspace=0.,wspace=0.02)
-plt.savefig("/scratch/shuiyao/figures/tmp.png")
+plt.savefig("/home/shuiyao_umass_edu/figures/tmp.png")
 plt.show()
 
-print "DONE."
+print ("DONE.")
 
 # from mpl_toolkits.mplot3d import Axes3D
 # ax = fig.add_subplot(111, projection="3d")

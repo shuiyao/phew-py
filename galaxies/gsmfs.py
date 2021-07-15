@@ -10,7 +10,7 @@ from myinit import *
 
 DATABASEDIR = DIRS['DATA']
 # modelname = "l50n576-phew-m5"
-modelname = "l50n288-phew-m5-sph"
+modelname = "l50n288-phewoff-sph"
 SKIDBASE = modelname+"/"
 #SKIDBASE = "p25n144gwl_z1b/"
 
@@ -95,6 +95,6 @@ def batch():
         smf(infile, outfile, plot=True)
 
 for snapstr in ["033", "058", "078", "108", "098"]:    
-    outfile = DIRS['SCIDATA']+modelname+"/gsmf_"+snapstr+".txt"
+    outfile = DIRS['SCIDATA']+modelname+"/gsmf_"+snapstr+".txt"o
     batch()
 

@@ -3,8 +3,7 @@ from astroconst import pc, ac
 from numpy import log10, logspace, inf
 import gadget_units
 
-# fname = "/proj/shuiyao/p50n576fi/gals/gal_z108.stat"
-fname = "/proj/shuiyao/l25n144-phew-m5/gal_z108.stat"
+fname = "/nas/astro-th/shuiyao/l25n144-test/gal_z108.stat"
 
 GalTxt = "GIDX" # MSTAR, GID, GIDX
 LABEL = False
@@ -90,7 +89,7 @@ def select_gals(gals, xlims=[], ylims=[], zlims=[], mlims=[]):
 def draw(gals, ax=None, pcolor="blue", marker="o", tshift=0.0):
     # Note here tshift must be in the correct unit that gal.pos = gal.vel * tshift
     # Normally gal.vel * t.gadget = [kpc] but gal.pos here is in [Mpc]
-    print "Start Drawing."
+    print ("Start Drawing.")
     x, y, ms, mgal, sizes = [], [], [], [], []
     # xs, ys = [], []
     if(ax == None):
@@ -109,7 +108,7 @@ def draw(gals, ax=None, pcolor="blue", marker="o", tshift=0.0):
             #     xs.append(gal.pos[0])
             #     ys.append(gal.pos[1])
             n += 1
-    print "Number of Galaxies Shown: ", n
+    print ("Number of Galaxies Shown: ", n)
     ax.scatter(x, y, s=sizes, alpha=0.6, color=pcolor, marker=marker)
     # ax.plot(xs, ys, "r.", markersize=5)
     ax.set_xlim(XBOUNDS)
@@ -117,5 +116,5 @@ def draw(gals, ax=None, pcolor="blue", marker="o", tshift=0.0):
     ax.set_xlabel("Mpc/h")
     ax.set_ylabel("Mpc/h")    
 
-# gals = read_gals(fname)
-# draw(gals)
+gals = read_gals(fname)
+draw(gals)

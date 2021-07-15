@@ -6,6 +6,7 @@ import config
 from importlib import reload
 import os
 from myinit import *
+import glob
 
 from pygizmo import galaxy
 
@@ -20,6 +21,16 @@ from pygizmo import galaxy
 # Comparing two stars_.csv file will tell how much mainId has changed
 
 # Host: galId -> haloId -> hostId -> mainId(host)
+
+schema_columns = ['mainId', 'snapnum', 'galId', 'hostId', 'Mtot', 'Mstar', 'Mhost', 'mainIdNext']
+schema_dtypes = {'mainId': "int32",
+                 'snapnum': "int32",
+                 'galId': "int32",
+                 'hostId': "int32",
+                 'Mtot': "float32",
+                 'Mstar': "float32",
+                 'Mhost': "float32",                 
+                 'mainIdNext': "int32"}
 
 def find_mainId_for_initId(sp):
     '''
@@ -68,9 +79,9 @@ def load_galaxy_data(path_model, snapnum, cosmo):
     path_stat = os.path.join(path_model, "gal_z{:03d}.stat".format(snapnum))
     path_sovcirc = os.path.join(path_model, "so_z{:03d}.sovcirc".format(snapnum))
     gals = galaxy.read_stat(path_stat)
+    galId2Mgal = gals[['Mtot', 'Mstar']].apply(lambda x: np.log10(x * cosmo['msun_tipsy'] / cosmo['h']))
     halos = galaxy.read_sovcirc(path_sovcirc)
     galId2Mhost = halos.apply(lambda x: np.log10(np.maximum(x.Mvir, x.Msub)/cosmo['h']), axis=1).to_dict()
-    galId2Mgal = gals[['Mtot', 'Mstar']].apply(lambda x: np.log10(x * cosmo['msun_tipsy'] / cosmo['h']))
     return galId2Mgal, galId2Mhost, galId2hostId
 
 def find_galId_for_mainId(sp):
@@ -96,6 +107,41 @@ def find_galId_for_mainId(sp):
     mainId2galId = grps[idx][['mainId', 'galId']].set_index('mainId')
     return mainId2galId
 
+def find_main_descendent_mainId(sp, spn):
+    '''
+    For each galaxy (galId, mainId) in the current snapshot, find the mainId^ of its main descendent galaxy in the next snapshot. First step is to find the galId^ of the main descendent. There are several cases:
+    I. There is no galId^ to be found: 
+       The galaxy has been tidally distroyed. Set mainIdNext to 0. 
+    II. Main descendent exists, but most of its mass came from another galaxy.
+       The galaxy has merged into a parent galaxy. Set mainIdNext to mainId^
+    III. Main descendent exists, and it is the same galaxy.
+       Simply set mainIdNext to mainId^, which is equal to mainId.
+    
+    Parameters
+    ----------
+    sp: DataFrame.
+        Star particles from this snapshot.
+    spn: DataFrame.
+        Star particles from the next snapshot.
+
+    Returns
+    -------
+    galId2galIdNext: dict.
+        A temporary mapping between galId to galIdNext.
+        Note: not all galId2galIdNext from sp has a mapping.
+    '''
+    sp = pd.merge(sp[sp.galId > 0][['galId','mass']],
+                  spn[spn.galId > 0][['galId']].rename({'galId':'galIdNext'}, axis=1),
+                  how='left', left_index=True, right_index=True)
+
+    grp = sp.groupby(['galId', 'galIdNext']).sum('mass').reset_index()
+    idx = grp.groupby('galId')['mass'].transform(max) == grp['mass']
+
+    tmp = spn.drop_duplicates('galId')
+    galId2mainId = dict(zip(tmp.galId, tmp.mainId))
+    galId2mainId[0] = 0 # Rogue stars
+    return dict(zip(grp[idx].galId, grp[idx].galIdNext.map(galId2mainId)))
+
 def build_mainId_map_for_snapshot(path_model, snapnum):
     galId2Mgal, galId2Mhost, galId2hostId = load_galaxy_data(path_model, snapnum, cosmo)
     sp = functions.load_stars_from_snapshot(path_model, snapnum)
@@ -108,48 +154,82 @@ def build_mainId_map_for_snapshot(path_model, snapnum):
     mainIdMap['snapnum'] = snapnum
     return mainIdMap
 
-def find_main_descendent_galId(sp, spn):
-    '''
-    For each galaxy from a snapshot, find its main descendent in the next snapshot. The main descendent of a galaxy is defined as the galaxy that has a majority of its stellar mass.
-
-    Parameters
-    ----------
-    sp: DataFrame.
-        Star particles from this snapshot.
-    spn: DataFrame.
-        Star particles from the next snapshot.
-
-    Returns
-    -------
-    galId2galIdNext: dict.
-        A temporary mapping between galId to galIdNext.
-    '''
-    sppair = pd.merge(sp[sp.galId > 0][['galId','mass']],
-                      spn[['galId']].rename({'galId':'galIdNext'}, axis=1),
-                      how='left', left_index=True, right_index=True)
-    grp = sppair.groupby(['galId', 'galIdNext']).sum('mass').reset_index()
-    idx = grp.groupby('galId')['mass'].transform(max) == grp['mass']
-    return dict(zip(grp[idx].galId, grp[idx].galIdNext))
-
 model = 'l12n144-phew-movie-200'
 path_model = os.path.join(DIRS['DATA'], model)
-cosmo = {'h':0.70, 'msun_tipsy':4.3e16}
-mainIdMap = build_mainId_map_for_snapshot(path_model, 100)
+cosmo = {'h':0.70, 'msun_tipsy':4.3e16 * (12./25.)**3}
+list_of_snapnums = list(range(0, 201, 2))
 
-sp = functions.load_stars_from_snapshot(path_model, 100)
-spn = functions.load_stars_from_snapshot(path_model, 105)
-galId2galIdNext = find_main_descendent_galId(sp, spn)
-mainIdMap['mainIdNext'] = mainIdMap['galId'].map(galId2galIdNext)
+glob.glob(path_model+"/stars_*.csv")
 
-# How to define parent
+def build_mainId_table(path_model, cosmo, list_of_snapnums):
+    for i, snapnum in enumerate(list_of_snapnums):
+        print("snapnum = {}".format(snapnum))
+        galId2Mgal, galId2Mhost, galId2hostId = load_galaxy_data(path_model, snapnum, cosmo)
+        if(i == 0):
+            sp = functions.load_stars_from_snapshot(path_model, snapnum)
+        else:
+            sp = spn.copy()
+        if(snapnum != list_of_snapnums[-1]): # not the last one
+            spn = functions.load_stars_from_snapshot(path_model, list_of_snapnums[i+1])
+            
+        mainIdMap = find_galId_for_mainId(sp)
+        # Get Mtot, Mstar, Mhost for the table
+        mainIdMap['hostId'] = mainIdMap['galId'].map(galId2hostId)
+        mainIdMap = pd.merge(mainIdMap, galId2Mgal,
+                             how='left', left_on='galId', right_index=True)
+        mainIdMap['Mhost'] = mainIdMap['hostId'].map(galId2Mhost)
+        mainIdMap['snapnum'] = snapnum
+        if(snapnum != list_of_snapnums[-1]):
+            galId2mainIdNext = find_main_descendent_mainId(sp, spn)
+            # Not every galId can be mapped.
+            # The galIds not in the dictionary map to NaN. As a result, the field mainIdNext is automatically treated as float64
+            mainIdMap['mainIdNext'] = mainIdMap['galId'].map(galId2mainIdNext).astype('Int32').fillna(0)
+        else:
+            mainIdMap['mainIdNext'] = 0
+        mainIdTable = mainIdMap.copy() if (i == 0) else pd.concat([mainIdTable, mainIdMap])
+    return mainIdTable
 
-# construct mainId table:
-# ISSUE: many galId -> same mainId
-# SOLUTION: Choose the largest gal
-# sp[['galId', 'mainId', 'mass']]
-# groupby 'mainId', 'galId'
-# agg: sum(mass)
-# pick galId with largest sum(mass)
+# mainIdTable = build_mainId_table(path_model, cosmo, list_of_snapnums)
+# mainIdTable.reset_index().to_csv('test.csv', columns=schema_columns, index=False)
+
+x = pd.read_csv('test.csv', header=0, dtype=schema_dtypes)
+sp = functions.load_stars_from_snapshot(path_model, 200)
+gals = x[x.snapnum==200]
+
+def code_repo():
+    # Get the mainIds of the most massive galaxies at z = 0
+    bgals = x[x.snapnum==200].sort_values('Mstar', ascending=False).iloc[:5]
+    mgals = gals[(10.8 < gals.Mstar) & (gals.Mstar < 11.2)]
+
+    import matplotlib.pyplot as plt
+    # Let's try with the most massive galaxy: 4813
+    mainIdTarget = 20679
+
+    gal = x[x.mainId == mainIdTarget]
+    plt.plot(gal.snapnum, gal.Mstar, "b-")
+
+    upstr = x[x.mainIdNext == mainIdTarget].drop_duplicates('mainId') # 934 rows
+    upstr = upstr[(upstr.mainId != mainIdTarget) & (upstr.Mstar > 10.0)] # 50 rows
+
+# sub = gals[gals.Mstar > 10.0]
+# for mainId in sub.mainId:
+#     gal = x[x.mainId == mainId]
+#     plt.plot(gal.snapnum, gal.Mtot, "r-", alpha=0.5)
+#     plt.plot(gal.snapnum, gal.Mhost, "b-", alpha=0.5)
+# plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # show_merger_tree(snapnum, galId)
 # 1. query(snapnum, galId) from the stars_{}.csv file

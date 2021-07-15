@@ -39,7 +39,7 @@ from numpy import loadtxt
 midx, models, clrs, lgds = loadtxt("models.dat", unpack=True, dtype='i8, U30, U20, U20')
 
 titlestr = "P50N288, Baldry+12, Tomczak+14, EAGLE"
-fig = plt.figure(1, figsize=(8,8))
+fig = plt.figure(1, figsize=(10,8))
 axs = []
 for i in range(4):
     axs.append(fig.add_subplot(2,2,i+1))
@@ -210,13 +210,15 @@ for i in range(4):
 #l1 = plt.legend(lines, ["z = 0", "z = 1", "z = 2"], loc=3, fontsize=12)
 # l1 = axs[0].legend(lines_runs, [runname,"EAGLE","P50-N576"], loc=3, fontsize=12)
 # l1 = axs[0].legend([line_b13a, line_b13b], ["Dave +16", "EAGLE", "B13, cmodel", "B13, sersic"], loc=3, fontsize=12)
-l2 = axs[1].legend(lines_data, ["Baldry +12", "Tomczak +14", "Tomczak +14", "Song +16"], loc=3, fontsize=12)
-# plt.gca().add_artist(l1)
+# l2 = axs[1].legend(lines_data, ["Baldry +12", "Tomczak +14", "Tomczak +14", "Song +16"], loc=3, fontsize=12)
+
+l1 = axs[1].legend(lines_data, ["Baldry +12", "Tomczak +14", "Tomczak +14", "Song +16"], bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0, fontsize=12)
+
 axs[0].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$', fontsize=12)
 axs[2].set_ylabel(r'$\Phi [Mpc^{-3}/Log(M)]$', fontsize=12)
 axs[2].set_xlabel("Log(M*)")
 axs[3].set_xlabel("Log(M*)")
-fig.subplots_adjust(hspace=0.0, wspace=0.0)
+fig.subplots_adjust(hspace=0.0, wspace=0.0, right=0.73)
 setp(axs[0].get_xticklabels(),visible=False)
 setp(axs[1].get_xticklabels(),visible=False)
 setp(axs[1].get_yticklabels(),visible=False)
@@ -224,13 +226,23 @@ setp(axs[3].get_yticklabels(),visible=False)
 axs[0].yaxis.set_ticks(linspace(-5.0, -1.0, 5))
 axs[2].yaxis.set_ticks(linspace(-5.0, -2.0, 4))
 
-from pltastro import legend
-lgd = legend.legend(axs[3])
-lgd.loc="lower right"
-lgd.fontsize = 8
+lines = []
 for i, mi in enumerate(SHOW_MODEL_LIST):
-    lgd.addLine((lgds[mi], clrs[mi], lstyles[i], lw[i]))
-lgd.draw()
+    line, = axs[3].plot([MLIM_PLOT], [-5.5], color=clrs[mi], linestyle=lstyles[i], linewidth=lw[i])
+    lines.append(line)
+l2 = axs[3].legend(lines, list(lgds[SHOW_MODEL_LIST]), loc='upper left', bbox_to_anchor=(1.05, 1), fontsize=12, borderaxespad=0)
+plt.gca().add_artist(l2)
+
+
+# from pltastro import legend
+# lgd = legend.legend(axs[3])
+# lgd.loc="lower right"
+# lgd.fontsize = 8
+# for i, mi in enumerate(SHOW_MODEL_LIST):
+#     lgd.addLine((lgds[mi], clrs[mi], lstyles[i], lw[i]))
+# lgd.draw()
+
+
 
 # plt.title(titlestr)
 plt.savefig(DIRS['FIGURE']+"tmp.pdf")

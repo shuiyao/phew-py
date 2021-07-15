@@ -7,8 +7,8 @@ from matplotlib.patches import Circle
 model = "l12n144-phew-movie"
 zstr = "400"
 
-galname = "/scratch/shuiyao/data/"+model+"/gal_z"+zstr+".stat"
-soname = "/scratch/shuiyao/data/"+model+"/so_z"+zstr+".sovcirc"
+galname = "/nas/astro-th/shuiyao/"+model+"/gal_z"+zstr+".stat"
+soname = "/nas/astro-th/shuiyao/"+model+"/so_z"+zstr+".sovcirc"
 
 GalTxt = "GIDX" # MSTAR, GID, GIDX
 LABEL = True
@@ -30,7 +30,7 @@ def draw(ax=None, pcolor="blue", marker="o", tshift=0.0):
     z = (array(z) + 0.5) * LBOX
     msub, rsub = ioformat.rcol(soname, [6, 7], linestart=1)
 
-    print "Start Drawing."
+    print ("Start Drawing.")
     if(ax == None):
         fig = plt.figure(figsize=(8,8))
         ax = fig.add_subplot(111)
@@ -52,7 +52,7 @@ def draw(ax=None, pcolor="blue", marker="o", tshift=0.0):
                 plt.text(x[i], y[i], lbl, fontsize=6)
             # print xs[-1], ys[-1], sizes[-1]
             n += 1
-    print "Number of Galaxies Shown: ", n
+    print ("Number of Galaxies Shown: ", n)
     # ax.scatter(x, y, s=sizes, alpha=0.6, color=pcolor, marker=marker)
     # ax.plot(xs, ys, "r.", markersize=5)
     ax.set_xlim(XBOUNDS)
@@ -61,6 +61,6 @@ def draw(ax=None, pcolor="blue", marker="o", tshift=0.0):
     ax.set_ylabel("Mpc/h")    
     plt.savefig("/scratch/shuiyao/figures/tmp.png")
 
-# gals = read_gals(fname)
-# draw(gals)
-print "compiled."
+gals = read_gals(fname)
+draw(gals)
+print ("compiled.")

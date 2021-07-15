@@ -1,5 +1,4 @@
 from mymod import *
-from cosmology import acosmic, tcosmic
 import h5py
 import os
 

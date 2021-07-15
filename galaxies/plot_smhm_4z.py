@@ -126,6 +126,7 @@ axs[2].yaxis.set_ticks(linspace(-4.0, -2.0, 3))
 from pltastro import legend
 lgd = legend.legend(axs[0])
 lgd.loc="lower right"
+lgd.fontsize=12
 for mi in SHOW_MODEL_LIST:
     lgd.addLine((lgds[mi], clrs[mi], "-", 1))
 lgd.draw()

@@ -1,4 +1,4 @@
-from mymod import *
+from myinit import *
 from cosmology import acosmic, tcosmic
 import h5py
 import os
@@ -21,12 +21,12 @@ unit_time = sqrt(8.*pi/3.) * ac.mpc / (100.e5 * hparam)
 unit_density = UNIT_M / (UNIT_L ** 3) / (1.8791e-29 * omegab)
 unit_temp = UNIT_V ** 2 * (2./3.) * pc.mh / pc.k
 
-model = "l25n288-phew-m5-spl"
+model = "l25n288-phew-m5"
 haloid = 3357
 snapi = 33
 zstr = ("000"+str(snapi))[-3:]
-datadir = "/proj/shuiyao/" + model + "/"
-fbase = "/scratch/shuiyao/scidata/gadget3io/" + model + "/"
+datadir = "/nas/astro-th/shuiyao/" + model + "/"
+fbase = "/home/shuiyao_umass_edu/scidata/gadget3io/" + model + "/"
 if(not os.path.exists(fbase + "haloparts/")):
     os.mkdir(fbase + "haloparts/")
 
@@ -37,8 +37,8 @@ HaloRad = 0.0
 def get_halo_info(hid):
     galname = datadir + "gal_z"+zstr+".stat"
     soname = datadir + "so_z"+zstr+".sovcirc"
-    print "Galaxy Catalog: ", galname
-    print "Halo Catalog: ", soname    
+    print("Galaxy Catalog: ", galname)
+    print("Halo Catalog: ", soname)
     x, y, z = ioformat.rcol(galname, [18, 19, 20])
     HaloPos[0] = (x[hid-1] + 0.5) * lbox
     HaloPos[1] = (y[hid-1] + 0.5) * lbox
@@ -46,11 +46,11 @@ def get_halo_info(hid):
     msub, rsub = ioformat.rcol(soname, [6, 7], linestart=1)
     HaloMass = log10(msub[hid-1] / hparam)
     HaloRad = rsub[hid-1] / hparam
-    print "Halo Information: "
-    print "----------------"
-    print "Pos = [%7.1f, %7.1f, %7.1f] (/h kpc)" % (HaloPos[0], HaloPos[1], HaloPos[2])
-    print "Log(Mass/Msolar) = %6.3f" % (HaloMass)
-    print "Radius = %6.2f kpc" % (HaloRad)
+    print("Halo Information: ")
+    print("----------------")
+    print("Pos = [%7.1f, %7.1f, %7.1f] (/h kpc)" % (HaloPos[0], HaloPos[1], HaloPos[2]))
+    print("Log(Mass/Msolar) = %6.3f" % (HaloMass))
+    print("Radius = %6.2f kpc" % (HaloRad))
     return HaloPos, HaloMass, HaloRad
 
 # pidset = set(ids)
@@ -58,8 +58,8 @@ def get_halo_info(hid):
 snapname = datadir + "snapshot_"+zstr+".hdf5"
 halostr = "h"+("00000" + str(haloid))[-5:]
 outname = fbase + "haloparts/" + halostr + "_" + zstr
-print "Reading: ", snapname
-print "Writing: ", outname
+print("Reading: ", snapname)
+print("Writing: ", outname)
 HaloPos, HaloMass, HaloRad = get_halo_info(haloid)
 
 hf = h5py.File(snapname, "r")
@@ -74,7 +74,7 @@ gp_hsml = array(gp['SmoothingLength'])
 gp_sfr = array(gp['StarFormationRate'])
 
 # Loop through all snapshots and find the particle
-print "Start Searching Particles."
+print("Start Searching Particles.")
 fout = open(outname, "w")
 fout.write("%8.2f %8.2f %8.2f %6.3f %6.2f\n" % \
            (HaloPos[0], HaloPos[1], HaloPos[2], HaloMass, HaloRad))
@@ -82,7 +82,7 @@ fout.write("----------------\n")
 fout.write("#x y z Hsml logT Mc SFflag\n")
 ncount, nphew = 0, 0
 for i in range(len(gp_pos)):
-    if(not (i % (1000000))): print "Doing ", ("00000000" + str(i))[-8:]
+    if(not (i % (1000000))): print("Doing ", ("00000000" + str(i))[-8:])
     if(abs(gp_pos[i][0] - HaloPos[0]) > 1.2 * HaloRad): continue
     if(abs(gp_pos[i][1] - HaloPos[1]) > 1.2 * HaloRad): continue
     if(abs(gp_pos[i][2] - HaloPos[2]) > 1.2 * HaloRad): continue        
@@ -99,8 +99,8 @@ for i in range(len(gp_pos)):
     fout.write(line)
     ncount += 1
 fout.close()
-print "Total Number of Gas Particles: ", ncount
-print "Total Number of PhEW Particles: ", nphew
-print "Done: ", outname
+print("Total Number of Gas Particles: ", ncount)
+print("Total Number of PhEW Particles: ", nphew)
+print("Done: ", outname)
  
 # print "DONE."

@@ -31,7 +31,7 @@ SAVEFIG = False
 # titles = ["Gadget", "GIZMO"]
 # fig = plt.figure(1, figsize=(8,6))
 
-simnames = ["l50n288-phewoff", "l50n288-phew-m5", "l25n288-phew-m5"]
+simnames = ["l50n288-phewoff", "l50n288-phew-m5", "l50n576-phew-m5"]
 titles = ["Non-PhEW, LowRes", "PhEW, LowRes", "PhEW, HighRes"]
 fig = plt.figure(1, figsize=(8,6))
 

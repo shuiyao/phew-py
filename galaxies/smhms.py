@@ -9,7 +9,7 @@ from myinit import *
 # Write smf_###.txt file
 
 # modelname = "l50n576-phew-m5"
-modelname = "l50n288-phew-m5-sph"
+modelname = "l50n288-phewoff-sph"
 DATABASEDIR = DIRS['DATA']
 SKIDBASE = DIRS['DATA'] + modelname + "/"
 # BOXSIZE = 18.0
@@ -18,7 +18,7 @@ BOXSIZE = 50.0
 unit_m = 3469578.81574
 
 def batch():
-    for n in ["033", "058", "078", "108", "098"]:
+    for n in ["108", "058", "078", "033", "098"]:
         galfile = SKIDBASE+"gal_z"+n+".stat"
         sofile = SKIDBASE+"so_z"+n+".sovcirc"
         parfile = SKIDBASE+"so_z"+n+".par"
